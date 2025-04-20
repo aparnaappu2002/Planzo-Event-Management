@@ -1,6 +1,8 @@
+import React from 'react'
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
-//import './App.css'
+import './App.css'
 import UserRoute from './Routes/UserRoute'
+
 
 function App() {
   
@@ -10,6 +12,8 @@ function App() {
     
     <Routes>
       <Route path='/*' element={<UserRoute/>}></Route>
+     
+      
     </Routes>
     
     </BrowserRouter>

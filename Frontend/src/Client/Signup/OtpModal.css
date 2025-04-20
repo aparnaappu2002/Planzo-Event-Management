@@ -1,0 +1,231 @@
+.otp-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  
+  .otp-modal {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    animation: modalFadeIn 0.3s ease-out;
+  }
+  
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .otp-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+  
+  .otp-modal-close:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #333;
+  }
+  
+  .otp-modal-content {
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .otp-modal-icon {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(255, 215, 0, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: #d4af37; /* Golden color */
+  }
+  
+  .otp-modal h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .otp-modal p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 25px;
+    max-width: 90%;
+  }
+  
+  .otp-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    justify-content: center;
+    width: 100%;
+    max-width: 360px;
+  }
+  
+  .otp-input-container input {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s;
+    background-color: #f9f9f9;
+    color: #333;
+    flex: 1;
+    padding: 0;
+  }
+  
+  .otp-input-container input:first-child {
+    border-color: #d4af37; /* Golden color for the first/active input */
+    background-color: #fffbeb;
+  }
+  
+  .otp-timer {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .otp-timer p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    margin-bottom: 5px;
+  }
+  
+  .otp-timer span {
+    font-weight: 600;
+    color: #d4af37; /* Golden color */
+  }
+  
+  .otp-resend-button {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+  }
+  
+  .otp-resend-button.enabled {
+    color: #d4af37; /* Golden color */
+  }
+  
+  .otp-resend-button.enabled:hover {
+    background-color: rgba(212, 175, 55, 0.2);
+  }
+  
+  .otp-resend-button.disabled {
+    color: #aaa;
+    cursor: not-allowed;
+  }
+  
+  .otp-verify-button {
+    width: 100%;
+    padding: 12px;
+    background-color: #e9d58b; /* Lighter golden color */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .otp-verify-button:hover {
+    background-color: #c5a028; /* Darker golden color */
+  }
+  
+  .otp-verify-button:disabled {
+    background-color: #e6d58f; /* Lighter golden color */
+    cursor: not-allowed;
+  }
+  
+  .loading-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .otp-input-container input {
+      width: 40px;
+      height: 50px;
+      font-size: 20px;
+    }
+  
+    .otp-modal-content {
+      padding: 20px;
+    }
+  
+    .otp-modal h2 {
+      font-size: 20px;
+    }
+  
+    .otp-modal p {
+      font-size: 14px;
+    }
+  }
+  

@@ -1,6 +1,6 @@
 import axios,{AxiosError,AxiosRequestConfig,InternalAxiosRequestConfig} from "axios";
 import {store} from "../redux/Store"
-import { addToken } from "@/redux/slices/user/userToken";
+import { addToken } from "../redux/slices/user/userToken";
 import authAxios from './authAxios'
 const instance = axios.create({
     baseURL: import.meta.env.VITE_API_BASEURL,

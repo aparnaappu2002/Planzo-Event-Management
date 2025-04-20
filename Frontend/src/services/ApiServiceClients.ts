@@ -32,3 +32,44 @@ export const clientSignup = async (values: FormValues) => {
         throw new Error('error while client signup')
     }
 }
+
+export const clientCreateAccount = async ({ formdata, otpString }: { formdata: Record<string, string | number | boolean>; otpString: string }) => {
+    try {
+        // Fix the endpoint to match what the server expects
+        const response = await axios.post('/createAccount', { formdata, otpString })
+        return response.data
+    } catch (error) {
+        console.log('error while client create account', error)
+        if (isAxiosError(error)) {
+            // Extract more detailed error information
+            throw new Error(error.response?.data?.error || "Failed to create account")
+        }
+        throw new Error('error while client create account')
+    }
+}
+
+export const clientResendOtp = async (email: string) => {
+    try {
+        const response = await axios.post('/resendOtp', { email })
+        return response.data
+    } catch (error) {
+        console.log('error while client resend otp', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data?.error)
+        }
+        throw new Error('error while client resend otp')
+    }
+}
+
+export const clientLogin = async ({ email, password }: Login) => {
+    try {
+        const response = await axios.post('/login', { email, password })
+        return response?.data
+    } catch (error) {
+        console.log('error while client login', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data?.error)
+        }
+        throw new Error('error while client login')
+    }
+}
