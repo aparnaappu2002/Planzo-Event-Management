@@ -1,17 +1,82 @@
-"use client"
-
+import { useClientSignupMutation } from "@/hooks/clientCustomHooks"
+import { useNavigate } from "react-router-dom"
 import type React from "react"
 import { useState } from "react"
+import { toast } from 'react-toastify'
+import { isAxiosError } from "axios"
 import "./Signup.css"
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   })
+  const [errors, setErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  })
+
+  const validateForm = () => {
+    let isValid = true
+    const newErrors = {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    }
+
+    // Validate name
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required"
+      isValid = false
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters"
+      isValid = false
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required"
+      isValid = false
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address"
+      isValid = false
+    }
+
+    // Validate password
+    if (!formData.password) {
+      newErrors.password = "Password is required"
+      isValid = false
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters"
+      isValid = false
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = "Password must contain uppercase, lowercase, and a number"
+      isValid = false
+    }
+
+    // Validate confirm password
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password"
+      isValid = false
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match"
+      isValid = false
+    }
+
+    setErrors(newErrors)
+    return isValid
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -19,17 +84,62 @@ const Signup: React.FC = () => {
       ...prev,
       [name]: value,
     }))
+    
+    // Clear the error for this field when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors({
+        ...errors,
+        [name]: ""
+      })
+    }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form submitted:", formData)
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword)
+  }
+
+  const signupMutation = useClientSignupMutation({
+    onSuccess: () => {
+      toast.success("Account created successfully!")
+      setIsOpen(true)
+      navigate("/", { replace: true })
+    },
+    onError: (error) => {
+      let message = "An unexpected error occurred"
+      if (isAxiosError(error)) {
+        message = error.response?.data?.message || "An error occurred"
+      }
+      toast.error(message)
+      setIsOpen(false)
       setIsLoading(false)
-    }, 1500)
+    }
+  })
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+    
+    setIsLoading(true)
+    
+    try {
+      signupMutation.mutate({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: "",
+        confirmPassword: formData.confirmPassword // Fixed to use the actual confirm password
+      })
+    } catch (error) {
+      console.log('Error while creating user', error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -83,11 +193,12 @@ const Signup: React.FC = () => {
                     id="name"
                     name="name"
                     placeholder="John Doe"
-                    required
                     value={formData.name}
                     onChange={handleChange}
+                    className={errors.name ? "input-error" : ""}
                   />
                 </div>
+                {errors.name && <div className="error-message">{errors.name}</div>}
               </div>
 
               <div className="form-group">
@@ -112,11 +223,12 @@ const Signup: React.FC = () => {
                     id="email"
                     name="email"
                     placeholder="john@example.com"
-                    required
                     value={formData.email}
                     onChange={handleChange}
+                    className={errors.email ? "input-error" : ""}
                   />
                 </div>
+                {errors.email && <div className="error-message">{errors.email}</div>}
               </div>
 
               <div className="form-group">
@@ -137,15 +249,47 @@ const Signup: React.FC = () => {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     placeholder="••••••••"
-                    required
                     value={formData.password}
                     onChange={handleChange}
+                    className={errors.password ? "input-error" : ""}
                   />
+                  <button 
+                    type="button" 
+                    className="password-toggle" 
+                    onClick={togglePasswordVisibility}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {showPassword ? (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                          <line x1="2" y1="22" x2="22" y2="2"></line>
+                        </>
+                      ) : (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </>
+                      )}
+                    </svg>
+                  </button>
                 </div>
+                {errors.password && <div className="error-message">{errors.password}</div>}
               </div>
 
               <div className="form-group">
@@ -166,15 +310,47 @@ const Signup: React.FC = () => {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     name="confirmPassword"
                     placeholder="••••••••"
-                    required
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    className={errors.confirmPassword ? "input-error" : ""}
                   />
+                  <button 
+                    type="button" 
+                    className="password-toggle" 
+                    onClick={toggleConfirmPasswordVisibility}
+                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {showConfirmPassword ? (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                          <line x1="2" y1="22" x2="22" y2="2"></line>
+                        </>
+                      ) : (
+                        <>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </>
+                      )}
+                    </svg>
+                  </button>
                 </div>
+                {errors.confirmPassword && <div className="error-message">{errors.confirmPassword}</div>}
               </div>
 
               <button type="submit" className="signup-button" disabled={isLoading}>
@@ -209,7 +385,7 @@ const Signup: React.FC = () => {
           <div className="signup-footer">
             <p>
               Already have an account?{" "}
-              <a href="#" className="signin-link">
+              <a href="/login" className="signin-link">
                 Sign in
               </a>
             </p>
