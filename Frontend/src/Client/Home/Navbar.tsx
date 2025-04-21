@@ -13,14 +13,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Calendar, ChevronDown, LogIn, Menu, Ticket, User, UserCircle, X } from "lucide-react"
+import { useSelector } from "react-redux"
 
-interface NavbarProps {
-  isLoggedIn?: boolean
-}
+import { RootState } from "@/redux/Store"
 
-export const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
+
+
+export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const navigate=useNavigate()
+  
+  const client = useSelector((state: RootState) => state.clientSlice.client)
+  const isLoggedIn = !!client
+
 
   const handleLoginClick = () => {
     navigate('/login') 
@@ -29,6 +34,10 @@ export const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
   const handleSignupClick = () => {
     navigate('/signup') 
   }
+  const handleProfileClick = () => {
+    navigate('/profile')
+  }
+  
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm">
@@ -86,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleProfileClick}>
                   <User className="w-4 h-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
@@ -95,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
                   My Tickets
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem >Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -163,7 +172,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isLoggedIn = false }) => {
                   <ChevronDown className="w-5 h-5" />
                 </div>
                 <div className="pl-4 mt-2 space-y-2">
-                  <a href="#" className="block py-1">
+                  <a href="/profile" className="block py-1">
                     Profile
                   </a>
                   <a href="#" className="block py-1">

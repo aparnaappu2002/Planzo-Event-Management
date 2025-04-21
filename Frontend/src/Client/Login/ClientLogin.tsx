@@ -5,7 +5,11 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useClientLoginMutation } from "../../hooks/clientCustomHooks"
 import { Eye, EyeOff, Lock, Mail } from "lucide-react"
+import { UseDispatch } from "react-redux"
+import { addClient } from "@/redux/slices/user/useSlice"
+import { addToken } from "@/redux/slices/user/userToken"
 import "./ClientLogin.css"
+import { useDispatch } from "react-redux"
 
 interface LoginFormData {
   email: string
@@ -20,6 +24,7 @@ export const ClientLoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Partial<LoginFormData>>({})
   const navigate=useNavigate()
+  const dispatch=useDispatch()
 
   const loginMutation = useClientLoginMutation()
 
@@ -56,11 +61,36 @@ export const ClientLoginPage: React.FC = () => {
     if (!validateForm()) return
 
     try {
-      await loginMutation.mutateAsync({
+      const response = await loginMutation.mutateAsync({
         email: formData.email,
         password: formData.password,
-      })
-      navigate('/')
+      }) as LoginResponse
+      console.log(response)
+
+      // Map the response to the expected structure
+    const token = response.accessToken; // Use accessToken instead of token
+    const userData = response.client;   // Use client instead of user
+
+    if (!token || !userData) {
+      console.error("Invalid response structure:", response);
+      throw new Error("Login successful but received invalid data");
+    }
+
+      // 1. Store the token in Redux
+      dispatch(addToken(token))
+      
+      // 2. Store the client data in Redux
+      dispatch(addClient(userData))
+
+      
+      // 3. Store token and client ID in localStorage for persistence
+      localStorage.setItem('token', token)
+      localStorage.setItem('clientId', userData.clientId || response.user._id || '')
+      
+      // Inside handleSubmit function, before navigate:
+console.log("About to navigate to home page");
+navigate('/');
+console.log("Navigation executed");
     } catch (error) {
       // Error is already handled by the mutation
     }

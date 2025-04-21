@@ -14,7 +14,7 @@ const rootReducer = combineReducers({
    // vendorToken: vendorTokenSlice,
     //vendorSlice: vendorSlice,
     //adminToken: adminTokenSlice,
-    clientSlice: clientSlice
+    clientSlice: clientSlice.reducer
 })
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 

@@ -44,3 +44,4 @@ export const useClientLoginMutation = () => {
         mutationFn: ({ email, password }: LoginProps) => clientLogin({ email, password }),
     })
 }
+

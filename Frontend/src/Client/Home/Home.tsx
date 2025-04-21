@@ -5,6 +5,7 @@ import { Calendar, CalendarDays, ChevronRight, MapPin, Search, Star, Ticket, Use
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useNavigate } from "react-router-dom"
 
 // Sample event data
 const featuredEvents = [
@@ -13,7 +14,7 @@ const featuredEvents = [
     title: "Summer Music Festival",
     date: "Aug 15-17, 2023",
     location: "Golden Park, San Francisco",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745200251/ahaaxpgqxsyqdmzaf2fm.jpg",
     category: "Music",
     price: "$99",
     rating: 4.8,
@@ -23,7 +24,7 @@ const featuredEvents = [
     title: "Tech Conference 2023",
     date: "Sep 5-7, 2023",
     location: "Convention Center, New York",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745200888/people-taking-part-high-protocol-event_23-2150951243_gac7qa.jpg",
     category: "Conference",
     price: "$149",
     rating: 4.6,
@@ -33,7 +34,7 @@ const featuredEvents = [
     title: "Food & Wine Expo",
     date: "Oct 12-14, 2023",
     location: "Grand Hall, Chicago",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745200974/media_14694f6b1bb332eec7aaa4cfb6c0fd12397756fb9_lvyion.png",
     category: "Food",
     price: "$75",
     rating: 4.7,
@@ -43,7 +44,7 @@ const featuredEvents = [
     title: "International Film Festival",
     date: "Nov 1-10, 2023",
     location: "Cinema Plaza, Los Angeles",
-    image: "/placeholder.svg?height=200&width=400",
+    image: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745201423/chicago-film-festival-1800x900_hvil0o.jpg",
     category: "Arts",
     price: "$120",
     rating: 4.9,
@@ -58,7 +59,7 @@ const testimonials = [
     role: "Event Organizer",
     content:
       "EventGold has transformed how we manage our events. The platform is intuitive and the customer support is exceptional.",
-    avatar: "/placeholder.svg?height=50&width=50",
+    avatar: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745201660/7e715ed9-44d4-4827-8c13-b62f5f8e0a2-1532619353372-8604_xh3qfy.png",
   },
   {
     id: 2,
@@ -66,7 +67,7 @@ const testimonials = [
     role: "Regular Attendee",
     content:
       "I've been using EventGold to discover and book events for over a year now. The experience is seamless and I love the recommendations!",
-    avatar: "/placeholder.svg?height=50&width=50",
+    avatar: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745201776/1738861390380_oeco8r.jpg",
   },
   {
     id: 3,
@@ -74,11 +75,15 @@ const testimonials = [
     role: "Corporate Event Manager",
     content:
       "The analytics and reporting features have been invaluable for our corporate events. Highly recommend for any serious event professional.",
-    avatar: "/placeholder.svg?height=50&width=50",
+    avatar: "https://res.cloudinary.com/dzpf5joxo/image/upload/v1745201866/4663_tcpqmw.webp",
   },
 ]
 
 export const HomePage: React.FC = () => {
+  const navigate=useNavigate()
+const handleSignupClick = () => {
+  navigate('/signup') 
+}
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -301,7 +306,7 @@ export const HomePage: React.FC = () => {
               started!
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button className="h-12 text-base bg-yellow-500 hover:bg-yellow-600">Sign Up Now</Button>
+              <Button className="h-12 text-base bg-yellow-500 hover:bg-yellow-600" onClick={handleSignupClick}>Sign Up Now</Button>
               <Button variant="outline" className="h-12 text-base">
                 Learn More
               </Button>
