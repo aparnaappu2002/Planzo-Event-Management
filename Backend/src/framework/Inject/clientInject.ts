@@ -10,6 +10,8 @@ import { JwtService } from "../services/jwtService";
 import { RedisService } from "../services/redisService";
 import { LoginClientUseCase } from "../../useCases/client/authentication/loginClientUseCase";
 import { ClientLoginController } from "../../adapters/controllers/client/authentication/clientLoginController";
+import { GoogleLoginClient } from "../../adapters/controllers/client/authentication/clientGoogleLogin";
+import { GoogleLoginClientUseCase } from "../../useCases/client/authentication/googleLoginClientUseCase";
 //Signup
 const otpService=new OtpService()
 const EmailService=new emailService()
@@ -25,3 +27,7 @@ const jwtService=new JwtService()
 const redisService=new RedisService()
 const loginClientUseCase=new LoginClientUseCase(ClientRepository)
 export const injectedClientLoginController=new ClientLoginController(loginClientUseCase,jwtService,redisService)
+
+//googleLogin
+const googleLoginClientUseCase = new GoogleLoginClientUseCase(ClientRepository)
+export const injectedGoogleLogincontroller = new GoogleLoginClient(googleLoginClientUseCase, jwtService, redisService)

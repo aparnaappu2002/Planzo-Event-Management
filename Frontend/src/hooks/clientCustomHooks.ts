@@ -1,5 +1,5 @@
 import { useMutation,useQuery } from "@tanstack/react-query";
-import { clientSignup,clientCreateAccount,clientResendOtp,clientLogin } from "../../src/services/ApiServiceClients";
+import { clientSignup,clientCreateAccount,clientResendOtp,clientLogin,clientGoogleLogin } from "../../src/services/ApiServiceClients";
 
 
 type LoginProps = {
@@ -45,3 +45,8 @@ export const useClientLoginMutation = () => {
     })
 }
 
+export const useClientGoogleLoginMutation = () => {
+    return useMutation({
+        mutationFn: (client: Client) => clientGoogleLogin(client)
+    })
+}

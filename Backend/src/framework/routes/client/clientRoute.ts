@@ -1,6 +1,6 @@
 import {Request,Response,Router} from "express"
 import { clientAuthenticationController } from "../../Inject/clientInject"
-import { injectedClientLoginController } from "../../Inject/clientInject"
+import { injectedClientLoginController,injectedGoogleLogincontroller } from "../../Inject/clientInject"
 
 export class clientRoute{
     public clientRoute:Router
@@ -21,7 +21,9 @@ export class clientRoute{
         this.clientRoute.post('/login', (req: Request, res: Response) => {
             injectedClientLoginController.handleLogin(req, res)
         })
-    
-    
+        this.clientRoute.post('/googleLogin', (req: Request, res: Response) => {
+            injectedGoogleLogincontroller.handleGoogleLogin(req, res)
+        })
+        
     }
 }

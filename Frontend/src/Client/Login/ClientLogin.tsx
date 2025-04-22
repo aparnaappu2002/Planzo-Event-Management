@@ -3,17 +3,33 @@
 import  React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useClientLoginMutation } from "../../hooks/clientCustomHooks"
+import { useClientLoginMutation,useClientGoogleLoginMutation } from "../../hooks/clientCustomHooks"
 import { Eye, EyeOff, Lock, Mail } from "lucide-react"
 import { UseDispatch } from "react-redux"
 import { addClient } from "@/redux/slices/user/useSlice"
 import { addToken } from "@/redux/slices/user/userToken"
 import "./ClientLogin.css"
 import { useDispatch } from "react-redux"
+import {jwtDecode} from 'jwt-decode'
+import { CredentialResponse,GoogleLogin } from "@react-oauth/google"
+import { toast } from "react-toastify"
 
 interface LoginFormData {
   email: string
   password: string
+}
+
+type GoogleAuth = {
+  email: string;
+  googleVerified: boolean;
+  name: string;
+  picture: string;
+}
+type Client = {
+  email: string;
+  googleVerified: boolean;
+  name: string;
+  profileImage: string
 }
 
 export const ClientLoginPage: React.FC = () => {
@@ -23,8 +39,12 @@ export const ClientLoginPage: React.FC = () => {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Partial<LoginFormData>>({})
-  const navigate=useNavigate()
-  const dispatch=useDispatch()
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const googleLoginMutation = useClientGoogleLoginMutation();
+ 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
 
   const loginMutation = useClientLoginMutation()
 
@@ -96,6 +116,54 @@ console.log("Navigation executed");
     }
   }
 
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    try {
+      setGoogleLoading(true);
+      
+      
+      
+        try {
+          console.log('clicked');
+          if (credentialResponse.credential) {
+            const credential: GoogleAuth = jwtDecode(credentialResponse.credential);
+            console.log(credential);
+            
+            const client: Client = {
+              email: credential.email,
+              name: credential.name,
+              googleVerified: true,
+              profileImage: credential.picture
+            };
+            
+            googleLoginMutation.mutate(client, {
+              onSuccess: (data) => {
+                console.log(data);
+                dispatch(addClient(data.client));
+                dispatch(addToken(data.accessToken));
+                localStorage.setItem('id', data.client._id);
+                toast.success('Login Successful');
+                navigate('/', { replace: true });
+                setGoogleLoading(false);
+              },
+              onError: (err) => {
+                toast.error(err.message);
+                setGoogleLoading(false);
+              }
+            });
+          }
+        } catch (error) {
+          console.log('error while google login', error);
+          setGoogleLoading(false);
+        }
+      
+      
+      
+    } catch (error) {
+      console.error("Google authentication error:", error);
+      setGoogleLoading(false);
+    }
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev)
   }
@@ -159,7 +227,7 @@ console.log("Navigation executed");
           </div>
 
           <div className="forgot-password-container">
-            <a href="#" className="forgot-password">
+            <a href="/forgotPassword" className="forgot-password">
               Forgot password?
             </a>
           </div>
@@ -167,6 +235,15 @@ console.log("Navigation executed");
           <button type="submit" className="login-button" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? "Signing in..." : "Sign In"}
           </button>
+
+          <div className="divider">
+            <span>OR</span>
+          </div>
+
+          <div >
+                                        <GoogleLogin onSuccess={handleGoogleLogin} onError={() => console.log('login failed')} useOneTap={false}></GoogleLogin>
+
+                                    </div>
 
           {loginMutation.isError && (
             <div className="api-error">

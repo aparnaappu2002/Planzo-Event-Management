@@ -1,7 +1,7 @@
 import { IemailService } from "../../../domain/interfaces/serviceInterface/IemalService";
 import { IotpService } from "../../../domain/interfaces/serviceInterface/IotpInterface";
 import {IuserExistenceService} from "../../../domain/interfaces/serviceInterface/IuserExistenceService"
-import { IsendOtpClientInterface } from "../../../domain/interfaces/useCaseInterfaces/authentication/sendOtpClientInterface";
+import { IsendOtpClientInterface } from "../../../domain/interfaces/useCaseInterfaces/client/authentication/sendOtpClientInterface";
 export class sendOtpClientUseCase implements IsendOtpClientInterface {
     private otpService: IotpService
     private emailService: IemailService

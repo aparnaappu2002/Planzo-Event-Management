@@ -1,6 +1,6 @@
 import { Request,Response } from "express";
 import { IloginClientControllerInterface } from "../../../../domain/interfaces/controllerInterfaces/IloginClientControllerInterface";
-import { IClientLoginuseCase } from "../../../../domain/interfaces/useCaseInterfaces/authentication/clientLoginUseCase";
+import { IClientLoginuseCase } from "../../../../domain/interfaces/useCaseInterfaces/client/authentication/clientLoginUseCase";
 import { IjwtInterface } from "../../../../domain/interfaces/serviceInterface/IjwtService";
 import { setCookie } from "../../../../framework/services/tokenCookieSetting";
 import { IredisService } from "../../../../domain/interfaces/serviceInterface/IredisService";

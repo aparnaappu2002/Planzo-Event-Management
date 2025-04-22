@@ -74,4 +74,15 @@ export const clientLogin = async ({ email, password }: Login) => {
     }
 }
 
-
+export const clientGoogleLogin = async (client: Client) => {
+    try {
+        const response = await axios.post('/googleLogin', { client })
+        return response.data
+    } catch (error) {
+        console.log('error while client google login', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data?.error)
+        }
+        throw new Error('error while client google login')
+    }
+}

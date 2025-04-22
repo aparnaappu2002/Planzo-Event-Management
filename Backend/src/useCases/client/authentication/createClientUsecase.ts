@@ -2,7 +2,7 @@ import { hashPassword } from "../../../framework/hashPassword/hashPassword";
 import { clientEntity } from "../../../domain/entities/clientEntity";
 import { generateRandomUuid } from "../../../framework/services/randomUuid";
 import { IClientDatabaseRepository } from "../../../domain/interfaces/repositoryInterfaces/client/clientDatabaseRepository";
-import { IclientUsecase } from "../../../domain/interfaces/useCaseInterfaces/client/clientUseCaseInterface";
+import { IclientUsecase } from "../../../domain/interfaces/useCaseInterfaces/client/authentication/clientUseCaseInterface";
 export class CreateClientUseCase implements IclientUsecase {
     private clientRepository: IClientDatabaseRepository
     private hashpassword: hashPassword

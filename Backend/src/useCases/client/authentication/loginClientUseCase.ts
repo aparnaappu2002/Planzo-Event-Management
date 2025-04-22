@@ -1,6 +1,6 @@
 import { clientEntity } from "../../../domain/entities/clientEntity";
 import { IClientDatabaseRepository } from "../../../domain/interfaces/repositoryInterfaces/client/clientDatabaseRepository";
-import { IClientLoginuseCase } from "../../../domain/interfaces/useCaseInterfaces/authentication/clientLoginUseCase";
+import { IClientLoginuseCase } from "../../../domain/interfaces/useCaseInterfaces/client/authentication/clientLoginUseCase";
 import { hashPassword } from "../../../framework/hashPassword/hashPassword";
 export class LoginClientUseCase implements IClientLoginuseCase{
     private clientDatabase:IClientDatabaseRepository
