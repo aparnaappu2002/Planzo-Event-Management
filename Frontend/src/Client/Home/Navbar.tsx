@@ -35,7 +35,7 @@ export const Navbar: React.FC = () => {
     navigate('/signup') 
   }
   const handleProfileClick = () => {
-    navigate('/profile')
+    navigate('/userProfile')
   }
   
 

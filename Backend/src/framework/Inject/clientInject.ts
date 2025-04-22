@@ -12,6 +12,19 @@ import { LoginClientUseCase } from "../../useCases/client/authentication/loginCl
 import { ClientLoginController } from "../../adapters/controllers/client/authentication/clientLoginController";
 import { GoogleLoginClient } from "../../adapters/controllers/client/authentication/clientGoogleLogin";
 import { GoogleLoginClientUseCase } from "../../useCases/client/authentication/googleLoginClientUseCase";
+import { UpdateProfileClientUseCase } from "../../useCases/client/profile/updateProfileDataClientUseCase";
+import { UpdateProfileClientController } from "../../adapters/controllers/client/profile/updateProfileClientController";
+import { hashPassword } from "../hashPassword/hashPassword";
+import { ChangePasswordClientUseCase } from "../../useCases/client/profile/changePasswordClientUseCase";
+import { ChangePasswordClientController } from "../../adapters/controllers/client/profile/changePasswordClientController";
+import { ChangeProfileImageClientUseCase } from "../../useCases/client/profile/changeProfileImageUseCase";
+import { ChangeProfileImageClientController } from "../../adapters/controllers/client/profile/changeProfileImageClientController";
+
+
+
+
+
+
 //Signup
 const otpService=new OtpService()
 const EmailService=new emailService()
@@ -31,3 +44,15 @@ export const injectedClientLoginController=new ClientLoginController(loginClient
 //googleLogin
 const googleLoginClientUseCase = new GoogleLoginClientUseCase(ClientRepository)
 export const injectedGoogleLogincontroller = new GoogleLoginClient(googleLoginClientUseCase, jwtService, redisService)
+//update client profile data
+const updateProfileClientUseCase = new UpdateProfileClientUseCase(ClientRepository)
+export const injectedUpdateProfileClientController = new UpdateProfileClientController(updateProfileClientUseCase)
+//client password change
+
+const HashPassword = new hashPassword()
+const changeClientPasswordUseCase = new ChangePasswordClientUseCase(ClientRepository, HashPassword)
+export const injectedChangeClientPasswordController = new ChangePasswordClientController(changeClientPasswordUseCase)
+
+//update profile image
+const changeProfileImageClientUseCase = new ChangeProfileImageClientUseCase(ClientRepository)
+export const injectedChangeProfileImageClientController = new ChangeProfileImageClientController(changeProfileImageClientUseCase)

@@ -1,6 +1,10 @@
 import {Request,Response,Router} from "express"
 import { clientAuthenticationController } from "../../Inject/clientInject"
-import { injectedClientLoginController,injectedGoogleLogincontroller } from "../../Inject/clientInject"
+import { injectedClientLoginController,
+    injectedGoogleLogincontroller,
+    injectedUpdateProfileClientController,
+    injectedChangeClientPasswordController,
+injectedChangeProfileImageClientController } from "../../Inject/clientInject"
 
 export class clientRoute{
     public clientRoute:Router
@@ -24,6 +28,14 @@ export class clientRoute{
         this.clientRoute.post('/googleLogin', (req: Request, res: Response) => {
             injectedGoogleLogincontroller.handleGoogleLogin(req, res)
         })
-        
+        this.clientRoute.put('/updateProfileClient',  (req: Request, res: Response) => {
+            injectedUpdateProfileClientController.handleUpdateProfileClient(req, res)
+        })
+        this.clientRoute.patch('/changePasswordClient',  (req: Request, res: Response) => {
+            injectedChangeClientPasswordController.handeChangePasswordClient(req, res)
+        })
+        this.clientRoute.patch('/updateProfileImage', (req: Request, res: Response) => {
+            injectedChangeProfileImageClientController.handleUpdateProfileImageClient(req, res)
+        })
     }
 }

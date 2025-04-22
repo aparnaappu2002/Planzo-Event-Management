@@ -1,6 +1,10 @@
 import { useMutation,useQuery } from "@tanstack/react-query";
-import { clientSignup,clientCreateAccount,clientResendOtp,clientLogin,clientGoogleLogin } from "../../src/services/ApiServiceClients";
-
+import { clientSignup,clientCreateAccount,
+    clientResendOtp,clientLogin,
+    clientGoogleLogin,updateProfileClient,
+    changePasswordClient,uploadImageCloudinary }
+ from "../../src/services/ApiServiceClients";
+import { ClientUpdateProfileEntity } from "@/types/clientUpdateProfileType";
 
 type LoginProps = {
     email: string;
@@ -48,5 +52,25 @@ export const useClientLoginMutation = () => {
 export const useClientGoogleLoginMutation = () => {
     return useMutation({
         mutationFn: (client: Client) => clientGoogleLogin(client)
+    })
+}
+export const useUpdateClientProfie = () => {
+    return useMutation({
+        mutationFn: (client: ClientUpdateProfileEntity) => updateProfileClient(client)
+    })
+}
+export const useChangePasswordClient = () => {
+    return useMutation({
+        mutationFn: ({ clientId, oldPassword, newPassword }: { clientId: string, oldPassword: string, newPassword: string }) => changePasswordClient(clientId, oldPassword, newPassword)
+    })
+}
+
+export const useUploadeImageToCloudinaryMutation = () => {
+    return useMutation({
+        mutationFn: async (formData: FormData) => {
+            return await uploadImageCloudinary(formData)
+
+        },
+
     })
 }
