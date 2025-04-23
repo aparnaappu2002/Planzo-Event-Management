@@ -4,6 +4,12 @@ import { persistReducer,persistStore } from "redux-persist";
 import { combineReducers } from "@reduxjs/toolkit";
 import tokenReducer from './slices/user/userToken'
 import { clientSlice } from "./slices/user/useSlice";
+import { vendorSlice } from "./slices/vendor/vendorSlice";
+import vendorTokenReducer from './slices/vendor/vendorTokenSlice'
+
+
+
+
 const persistConfig = {
     key: "root",
     storage,
@@ -11,8 +17,8 @@ const persistConfig = {
 }
 const rootReducer = combineReducers({
     token: tokenReducer,
-   // vendorToken: vendorTokenSlice,
-    //vendorSlice: vendorSlice,
+    vendorToken: vendorTokenReducer,
+    vendorSlice: vendorSlice,
     //adminToken: adminTokenSlice,
     clientSlice: clientSlice.reducer
 })
