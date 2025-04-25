@@ -7,6 +7,7 @@ import { connectMongo } from './framework/database/databaseConnection/dbConnecti
 import { clientRoute } from './framework/routes/client/clientRoute'
 import redisService from './framework/services/redisService'
 import { VendorRoute } from './framework/routes/vendor/vendorRoute'
+import { AdminRoute } from './framework/routes/admin/adminRoute'
 export class App{
     private app:Express
     private database:connectMongo
@@ -18,7 +19,7 @@ export class App{
         this.setMiddlewares()
         this.setClientRoute()
         this.setVendorRoute()
-
+        this.setAdminRoute()
         this.connectRedis()
 
         
@@ -41,6 +42,9 @@ export class App{
     }
     private setVendorRoute() {
         this.app.use('/vendor', new VendorRoute().vendorRoute)
+    }
+    private setAdminRoute() {
+        this.app.use('/admin', new AdminRoute().adminRoute)
     }
     public listen() {
         const port = process.env.PORT || 3000

@@ -3,7 +3,7 @@ import { BrowserRouter,Routes,Route } from 'react-router-dom'
 import './App.css'
 import UserRoute from './Routes/UserRoute'
 import VendorRoute from './Routes/VendorRoute'
-
+import AdminRoute from './Routes/AdminRoute'
 
 function App() {
   
@@ -14,7 +14,7 @@ function App() {
     <Routes>
       <Route path='/*' element={<UserRoute/>}></Route>
       <Route path='/vendor/*' element={<VendorRoute/>}></Route>
-     
+     <Route path='/admin/*' element={<AdminRoute/>}></Route>
       
     </Routes>
     

@@ -18,6 +18,7 @@ import ImageCropper from "./ImageCropper"
 import OtpModal from "../../Client/Signup/OtpModal"
 import VendorPendingModal from "./VenderPendingModal"
 import { useVendorSignupMutation, useVendorVerifyOtpMutation } from "@/hooks/vendorCustomHooks"
+import { useUploadeImageToCloudinaryMutation } from "@/hooks/vendorCustomHooks" // Import the Cloudinary hook
 import { vendorSignup } from "@/services/ApiServiceVendor"
 
 const formSchema = z
@@ -60,8 +61,11 @@ export default function VendorSignupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  // Hooks for API calls
   const sendOtpMutation = useVendorSignupMutation()
   const verifyOtpMutation = useVendorVerifyOtpMutation()
+  const uploadImageMutation = useUploadeImageToCloudinaryMutation() // Add Cloudinary upload mutation
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -87,21 +91,26 @@ export default function VendorSignupForm() {
     setIsSubmitting(true)
 
     try {
-      // Simulate uploading to Cloudinary
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      const mockImageUrl = "https://example.com/uploaded-image.jpg"
+      // Upload image to Cloudinary
+      const formData = new FormData()
+      formData.append("file", croppedImage)
+      formData.append("upload_preset", "Planzo") // You may need to set the correct upload preset
 
-      // Set vendor data
+      // Use the cloudinary upload mutation
+      const cloudinaryResponse = await uploadImageMutation.mutateAsync(formData)
+      const imageUrl = cloudinaryResponse.secure_url
+
+      // Set vendor data with the Cloudinary image URL
       const vendor: VendorData = {
         ...values,
-        idProof: mockImageUrl,
+        idProof: imageUrl,
       }
       setVendorData(vendor)
 
-      // First, send full signup data
+      // Send full signup data
       await vendorSignup(vendor)
 
-      // Then, trigger OTP sending
+      // Trigger OTP sending
       await sendOtpMutation.mutateAsync({ email: vendor.email })
 
       // Open OTP modal
@@ -110,7 +119,7 @@ export default function VendorSignupForm() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description: error instanceof Error ? error.message : "An error occurred during signup",
       })
     } finally {
       setIsSubmitting(false)
@@ -312,12 +321,12 @@ export default function VendorSignupForm() {
                 <Button
                   type="submit"
                   className="w-full mt-6 bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadImageMutation.isPending}
                 >
-                  {isSubmitting ? (
+                  {isSubmitting || uploadImageMutation.isPending ? (
                     <div className="flex items-center justify-center">
                       <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Creating Account...
+                      {uploadImageMutation.isPending ? "Uploading Image..." : "Creating Account..."}
                     </div>
                   ) : (
                     "Sign up"
