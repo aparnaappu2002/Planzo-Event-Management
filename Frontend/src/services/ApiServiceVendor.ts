@@ -63,3 +63,15 @@ export const vendorLogin = async (email: string, password: string) => {
         throw new Error('error while login vendor')
     }
 }
+export const updateProfileImageVendor = async (id: string, imageUrl: string) => {
+    try {
+        const response = await axios.post('/updateProfileImage', { id, imageUrl })
+        return response.data
+    } catch (error) {
+        console.log('error while updating image vendor side', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data.error)
+        }
+        throw new Error('error while updating image vendor side')
+    }
+}

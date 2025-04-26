@@ -4,10 +4,13 @@ import type React from "react"
 
 import { useState, type FormEvent } from "react"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
-import axios from "../../../axios/vendorAxios"
+import axios from "../../axios/vendorAxios"
 import { isAxiosError } from "axios"
 import { useNavigate } from "react-router-dom"
 import { toast } from "react-toastify"
+import { useDispatch } from "react-redux"
+import { addVendor } from "@/redux/slices/vendor/vendorSlice"
+import { addVendorToken } from "@/redux/slices/vendor/vendorTokenSlice"
 // You would replace this with your actual API base URL
 
 
@@ -26,6 +29,7 @@ export default function VendorLogin() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate=useNavigate()
+  const dispatch=useDispatch()
 
   const validateForm = (): boolean => {
     const newErrors: Partial<LoginFormData> = {}
@@ -73,8 +77,8 @@ export default function VendorLogin() {
 
       // Store vendor data in localStorage or state management
       localStorage.setItem("id", response.data.vendor._id)
-      localStorage.setItem("vendorToken", response.data.accessToken)
-      localStorage.setItem("vendorData", JSON.stringify(response.data.vendor))
+      dispatch(addVendorToken(response.data.accessToken))
+      dispatch(addVendor(response.data.vendor))
 
       // Navigate to home page (you would use your router here)
       navigate('/vendor/home')

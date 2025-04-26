@@ -12,8 +12,8 @@ import { LoginVendorUseCase } from "../../useCases/vendor/authentication/loginVe
 import { JwtService } from "../services/jwtService";
 import { RedisService } from "../services/redisService";
 import { LoginVendorController } from "../../adapters/controllers/vendor/authentication/loginVendorController";
-
-
+import { ProfileImageUpdateUseCase } from "../../useCases/vendor/profile/profileImageUpdate";
+import { UpdateImageVendorController } from "../../adapters/controllers/vendor/profile/updateImageController";
 
 //Register Vendor
 const EmailService = new emailService()
@@ -32,3 +32,6 @@ const vendorLoginUseCase = new LoginVendorUseCase(vendorRespository)
 const jwtService = new JwtService()
 const redisService = new RedisService()
 export const injectedVendorLoginController = new LoginVendorController(vendorLoginUseCase, jwtService, redisService)
+//update profile image of vendor
+const updateImageVendorUseCase = new ProfileImageUpdateUseCase(vendorRespository)
+export const injectedUpdateImageVendorController = new UpdateImageVendorController(updateImageVendorUseCase)

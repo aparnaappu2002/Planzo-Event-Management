@@ -1,5 +1,7 @@
 import { uploadImageCloudinary } from "@/services/ApiServiceClients";
-import { vendorSignup,verifyOtpVendor,resendOtpVendor } from "@/services/ApiServiceVendor";
+import { vendorSignup,verifyOtpVendor,resendOtpVendor,
+    updateProfileImageVendor
+ } from "@/services/ApiServiceVendor";
 import { useMutation,useQuery } from "@tanstack/react-query";
 
 
@@ -46,5 +48,10 @@ export const useVendorResendOtpMutation = () => {
         mutationFn: async (email: string) => {
             return await resendOtpVendor(email)
         }
+    })
+}
+export const useUpdateProfileImageMutation = () => {
+    return useMutation({
+        mutationFn: ({ id, imageUrl }: { id: string, imageUrl: string }) => updateProfileImageVendor(id, imageUrl)
     })
 }

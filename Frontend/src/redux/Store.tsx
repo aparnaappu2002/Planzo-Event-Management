@@ -18,7 +18,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
     token: tokenReducer,
     vendorToken: vendorTokenReducer,
-    vendorSlice: vendorSlice,
+    vendorSlice: vendorSlice.reducer,
     adminToken: adminTokenReducer,
     clientSlice: clientSlice.reducer
 })

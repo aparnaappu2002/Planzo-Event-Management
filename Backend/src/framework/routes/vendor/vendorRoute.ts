@@ -1,5 +1,7 @@
 import { Request,Response,Router } from "express";
-import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController } from "../../Inject/vendorInject";
+import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController,
+    injectedUpdateImageVendorController
+ } from "../../Inject/vendorInject";
 
 
 
@@ -22,6 +24,8 @@ export class VendorRoute {
         this.vendorRoute.post('/resendOtp', (req: Request, res: Response) => {
             injectedResendOtpVendorController.handleResendOtp(req, res)
         })
-        
+        this.vendorRoute.post('/updateProfileImage',  (req: Request, res: Response) => {
+            injectedUpdateImageVendorController.handleUpdateImageVendor(req, res)
+        })
     }
 }
