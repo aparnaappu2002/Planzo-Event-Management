@@ -140,16 +140,7 @@ function RejectedVendors() {
                         >
                           <Eye className="h-4 w-4 text-amber-600" />
                         </button>
-                        {/* <button
-                          className="p-1 rounded-full hover:bg-amber-100 transition-colors"
-                          title={vendor.status === "blocked" ? "Unblock Vendor" : "Block Vendor"}
-                          onClick={() => blockAndUnblock(vendor._id, vendor.status)}
-                        >
-                          <UserX className="h-4 w-4 text-amber-600" />
-                        </button>
-                        <button className="p-1 rounded-full hover:bg-amber-100 transition-colors" title="More Options">
-                          <MoreHorizontal className="h-4 w-4 text-amber-600" />
-                        </button> */}
+                        
                       </div>
                     </td>
                   </tr>
