@@ -50,6 +50,15 @@ export const useFetchAllPendingVendorAdminQuery = (currentPage: number) => {
         refetchOnWindowFocus: false
     })
 }
+export const useFindRejectedVendors = (currentPage: number) => {
+    return useQuery({
+        queryKey: ['rejectedVendors', currentPage],
+        queryFn: () => {
+            return findAllRejectedVendor(currentPage)
+        },
+        refetchOnWindowFocus: false
+    })
+}
 
 export const useUpdatePendingVendorStatusAdmin = () => {
     return useMutation({

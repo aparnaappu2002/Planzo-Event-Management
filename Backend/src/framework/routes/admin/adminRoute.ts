@@ -3,7 +3,8 @@ import { injectedAdminLoginController,injectedFindAllClientController,
     injectedBlockClientController,injectedClientUnblockController,
 injectedFindAllVendorController,injectedFindAllPendingVendorController,
 injectedRejectVendorController,injectedApproveVendorStatus,
-injectedVendorBlockController,injectedVendorUnblockController
+injectedVendorBlockController,injectedVendorUnblockController,
+injectedFindAllRejectedVendorController
     
  } from "../../Inject/adminInject";
 export class AdminRoute {
@@ -30,6 +31,9 @@ export class AdminRoute {
         })
         this.adminRoute.get('/pendingVendors',  (req: Request, res: Response) => {
             injectedFindAllPendingVendorController.findPendingVendor(req, res)
+        })
+        this.adminRoute.get('/rejectedVendors',  (req: Request, res: Response) => {
+            injectedFindAllRejectedVendorController.handleFindAllRejectedVendor(req, res)
         })
         this.adminRoute.patch('/updateVendorStatus',  (req: Request, res: Response) => {
             injectedApproveVendorStatus.handleApproveVendorUseCase(req, res)

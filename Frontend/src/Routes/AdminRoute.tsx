@@ -5,6 +5,7 @@ import Dashboard from "@/Admin/AdminDashboard"
 import UserManagementPage from "@/Admin/UserManagement"
 import VendorManagement from "@/Admin/vendors/VendorManagement"
 import PendingVendors from "@/Admin/vendors/PendinVendors"
+import RejectedVendors from "@/Admin/vendors/RejectedVendors"
 
 
 
@@ -18,6 +19,7 @@ const AdminRoute=()=>
             <Route path="userManagement" element={<UserManagementPage/>} ></Route>
             <Route path="vendorManagement" element={<VendorManagement/>} ></Route>
             <Route path="pendingVendors" element={<PendingVendors/>} ></Route>
+            <Route path="rejectedVendors" element={<RejectedVendors/>} ></Route>
             </Route>
         </Routes>
     )
