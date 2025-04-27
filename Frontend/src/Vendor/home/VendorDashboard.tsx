@@ -4,32 +4,31 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { RootState } from "@/redux/Store"
+import type { RootState } from "@/redux/Store"
 import { toast } from "react-toastify"
 import { isAxiosError } from "axios"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { User, Mail, Shield, Award, LogOut, Upload, CheckCircle, Clock, AlertTriangle } from "lucide-react"
+import {
+  User,
+  Mail,
+  Shield,
+  Award,
+  LogOut,
+  Upload,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Edit,
+  Save,
+  X,
+} from "lucide-react"
 import { addVendor, removeVendor } from "@/redux/slices/vendor/vendorSlice"
-import { useUpdateProfileImageMutation,useUploadeImageToCloudinaryMutation } from "@/hooks/vendorCustomHooks"
+import { useUpdateProfileImageMutation, useUploadeImageToCloudinaryMutation } from "@/hooks/vendorCustomHooks"
+import { useUpdateVendorDetailsMutation } from "@/hooks/vendorCustomHooks"
 import ImageCropper from "../signup/ImageCropper"
 import { removeVendorToken } from "@/redux/slices/vendor/vendorTokenSlice"
-
-// Vendor type based on the provided code
-interface Vendor {
-  _id: string
-  email: string
-  name: string
-  phone: string
-  role: string,
-  idProof: string,
-  status: string
-  vendorId: string
-  vendorStatus: "pending" | "approved" | "rejected"
-  rejectionReason?: string
-  profileImage?: string
-}
 
 export default function VendorDashboard() {
   const vendor = useSelector((state: RootState) => state.vendorSlice.vendor)
@@ -40,11 +39,18 @@ export default function VendorDashboard() {
   const [selectedImage, setSelectedImage] = useState<string>("")
   const [changedProfile, setChangedProfile] = useState<boolean>(false)
   const [isUploading, setIsUploading] = useState<boolean>(false)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    about: "",
+  })
   const activeSection = "profile"
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const uploadCloudinary = useUploadeImageToCloudinaryMutation()
-  
+  const updateVendorDetailsMutation = useUpdateVendorDetailsMutation()
+
   useEffect(() => {
     if (vendor) {
       if (vendor?.vendorStatus === "pending") {
@@ -52,6 +58,13 @@ export default function VendorDashboard() {
       } else if (vendor?.vendorStatus === "rejected") {
         setRejected(true)
       }
+
+      // Initialize form data with vendor details
+      setFormData({
+        name: vendor?.name || "",
+        phone: vendor?.phone || "",
+        about: vendor?.about || "",
+      })
     }
   }, [vendor])
 
@@ -77,24 +90,24 @@ export default function VendorDashboard() {
         toast.error("Please crop the image before uploading.")
         return
       }
-      
+
       setIsUploading(true)
-      
+
       // Create a FormData instance to upload to Cloudinary
       const formData = new FormData()
-      formData.append('file', croppedImage)
-      formData.append('upload_preset', 'Planzo') // Set your Cloudinary upload preset
-      
+      formData.append("file", croppedImage)
+      formData.append("upload_preset", "Planzo") // Set your Cloudinary upload preset
+
       // Upload to Cloudinary
       const cloudinaryData = await uploadCloudinary.mutateAsync(formData)
-      
+
       // Check if the response contains a secure_url
       if (!cloudinaryData || !cloudinaryData.secure_url) {
-        throw new Error('Failed to upload image to Cloudinary')
+        throw new Error("Failed to upload image to Cloudinary")
       }
-      
+
       const imageUrl = cloudinaryData.secure_url
-  
+
       if (vendor && vendor._id) {
         updateImage.mutate(
           { id: vendor._id, imageUrl },
@@ -109,13 +122,51 @@ export default function VendorDashboard() {
             onSettled: () => {
               setIsUploading(false)
               setChangedProfile(false)
-            }
+            },
           },
         )
       }
     } catch (error) {
       setIsUploading(false)
       handleError(error, "Error uploading image")
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleProfileUpdate = async () => {
+    try {
+      if (!vendor?._id) {
+        toast.error("Vendor ID not found")
+        return
+      }
+
+      updateVendorDetailsMutation.mutate(
+        {
+          id: vendor._id,
+          name: formData.name,
+          phone: formData.phone,
+          about: formData.about,
+        },
+        {
+          onSuccess: (data) => {
+            toast.success("Profile updated successfully")
+            dispatch(addVendor({ ...vendor, ...formData }))
+            setIsEditing(false)
+          },
+          onError: (error) => {
+            handleError(error, "Error updating profile")
+          },
+        },
+      )
+    } catch (error) {
+      handleError(error, "Error updating profile")
     }
   }
 
@@ -134,6 +185,18 @@ export default function VendorDashboard() {
     dispatch(removeVendor(null))
     dispatch(removeVendorToken(null))
     toast.success("Logout Successful")
+  }
+
+  const cancelEditing = () => {
+    setIsEditing(false)
+    // Reset form data to original values
+    if (vendor) {
+      setFormData({
+        name: vendor.name || "",
+        phone: vendor.phone || "",
+        about: vendor.about || "",
+      })
+    }
   }
 
   // Mock components for conditional rendering
@@ -219,16 +282,30 @@ export default function VendorDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 md:mt-0">
-                    <h2 className="text-2xl font-bold text-gray-800">{vendor?.name}</h2>
-                    <p className="text-yellow-600 font-medium mt-1">Professional Event Vendor</p>
-                    <p className="text-sm text-gray-500 mt-2 flex pb-3 items-center">
-                      <Award className="w-4 h-4 mr-2 text-yellow-500" />
-                      Vendor ID: {vendor?.vendorId || "Not Available"}
-                    </p>
+                  <div className="mt-4 md:mt-0 flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-800">{vendor?.name}</h2>
+                        <p className="text-yellow-600 font-medium mt-1">Professional Event Vendor</p>
+                        <p className="text-sm text-gray-500 mt-2 flex pb-3 items-center">
+                          <Award className="w-4 h-4 mr-2 text-yellow-500" />
+                          Vendor ID: {vendor?.vendorId || "Not Available"}
+                        </p>
+                      </div>
+                      {!isEditing && (
+                        <Button
+                          onClick={() => setIsEditing(true)}
+                          variant="outline"
+                          className="text-yellow-600 border-yellow-300 hover:bg-yellow-50"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Profile
+                        </Button>
+                      )}
+                    </div>
                     {changedProfile && (
-                      <Button 
-                        onClick={handleImageSave} 
+                      <Button
+                        onClick={handleImageSave}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white"
                         disabled={isUploading}
                       >
@@ -240,75 +317,168 @@ export default function VendorDashboard() {
 
                 <Separator className="my-6 bg-yellow-200" />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                {isEditing ? (
                   <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                      <Mail className="w-5 h-5 mr-2 text-yellow-500" />
-                      Contact Information
-                    </h3>
-                    <div className="space-y-3 text-gray-600">
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">Email:</span>
-                        {vendor?.email || "Not Available"}
-                      </p>
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">Phone:</span>
-                        {vendor?.phone || "Not Available"}
-                      </p>
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">Status:</span>
-                        <span
-                          className={`capitalize ${vendor?.status === "active" ? "text-green-600" : "text-red-600"} flex items-center`}
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                        <Edit className="w-5 h-5 mr-2 text-yellow-500" />
+                        Edit Profile
+                      </h3>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={cancelEditing}
+                          variant="outline"
+                          size="sm"
+                          className="text-gray-600 border-gray-300"
                         >
-                          {vendor?.status === "active" ? (
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                          ) : (
-                            <AlertTriangle className="w-4 h-4 mr-1" />
-                          )}
-                          {vendor?.status || "Not Available"}
-                        </span>
-                      </p>
+                          <X className="w-4 h-4 mr-1" />
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleProfileUpdate}
+                          size="sm"
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                          disabled={updateVendorDetailsMutation.isPending}
+                        >
+                          <Save className="w-4 h-4 mr-1" />
+                          {updateVendorDetailsMutation.isPending ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                      <Shield className="w-5 h-5 mr-2 text-yellow-500" />
-                      Vendor Status
-                    </h3>
-                    <div className="space-y-3 text-gray-600">
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">Account Type:</span>
-                        <span className="capitalize">{vendor?.role || "Not Available"}</span>
-                      </p>
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">Verification:</span>
-                        <span
-                          className={`capitalize flex items-center ${
-                            vendor?.vendorStatus === "approved"
-                              ? "text-green-600"
-                              : vendor?.vendorStatus === "pending"
-                                ? "text-yellow-600"
-                                : "text-red-600"
-                          }`}
-                        >
-                          {vendor?.vendorStatus === "approved" ? (
-                            <CheckCircle className="w-4 h-4 mr-1" />
-                          ) : vendor?.vendorStatus === "pending" ? (
-                            <Clock className="w-4 h-4 mr-1" />
-                          ) : (
-                            <AlertTriangle className="w-4 h-4 mr-1" />
-                          )}
-                          {vendor?.vendorStatus || "Not Available"}
-                        </span>
-                      </p>
-                      <p className="flex items-center">
-                        <span className="font-medium mr-2">ID:</span>
-                        <span className="font-mono text-sm">{vendor?._id || "Not Available"}</span>
-                      </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Your full name"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                            placeholder="Your phone number"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="about" className="block text-sm font-medium text-gray-700 mb-1">
+                          About
+                        </label>
+                        <textarea
+                          id="about"
+                          name="about"
+                          value={formData.about}
+                          onChange={handleInputChange}
+                          rows={5}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent resize-none"
+                          placeholder="Tell clients about yourself and your services"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <Mail className="w-5 h-5 mr-2 text-yellow-500" />
+                        Contact Information
+                      </h3>
+                      <div className="space-y-3 text-gray-600">
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          {vendor?.email || "Not Available"}
+                        </p>
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">Phone:</span>
+                          {vendor?.phone || "Not Available"}
+                        </p>
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">Status:</span>
+                          <span
+                            className={`capitalize ${vendor?.status === "active" ? "text-green-600" : "text-red-600"} flex items-center`}
+                          >
+                            {vendor?.status === "active" ? (
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                            ) : (
+                              <AlertTriangle className="w-4 h-4 mr-1" />
+                            )}
+                            {vendor?.status || "Not Available"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200">
+                      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <Shield className="w-5 h-5 mr-2 text-yellow-500" />
+                        Vendor Status
+                      </h3>
+                      <div className="space-y-3 text-gray-600">
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">Account Type:</span>
+                          <span className="capitalize">{vendor?.role || "Not Available"}</span>
+                        </p>
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">Verification:</span>
+                          <span
+                            className={`capitalize flex items-center ${
+                              vendor?.vendorStatus === "approved"
+                                ? "text-green-600"
+                                : vendor?.vendorStatus === "pending"
+                                  ? "text-yellow-600"
+                                  : "text-red-600"
+                            }`}
+                          >
+                            {vendor?.vendorStatus === "approved" ? (
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                            ) : vendor?.vendorStatus === "pending" ? (
+                              <Clock className="w-4 h-4 mr-1" />
+                            ) : (
+                              <AlertTriangle className="w-4 h-4 mr-1" />
+                            )}
+                            {vendor?.vendorStatus || "Not Available"}
+                          </span>
+                        </p>
+                        <p className="flex items-center">
+                          <span className="font-medium mr-2">ID:</span>
+                          <span className="font-mono text-sm">{vendor?._id || "Not Available"}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!isEditing && (
+                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200 mt-8">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                      <User className="w-5 h-5 mr-2 text-yellow-500" />
+                      About Me
+                    </h3>
+                    <p className="text-gray-600">
+                      {vendor?.about ||
+                        "No information provided yet. Click 'Edit Profile' to add details about yourself."}
+                    </p>
+                  </div>
+                )}
 
                 <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-lg shadow-sm border border-yellow-200 mt-8">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">

@@ -3,7 +3,7 @@ import VendorSignupPage from "@/Vendor/signup/VendorSignup";
 import VendorLogin from "@/Vendor/login/VendorLogin";
 import VendorDashboard from "@/Vendor/home/VendorDashboard";
 import { VendorLayout } from "@/Vendor/sidebar/Sidebar";
-
+import ChangePassword from "@/Vendor/changePassword/ChangePassword";
 
 
 
@@ -15,6 +15,7 @@ const VendorRoute=()=>{
             <Route  element={<VendorLayout/>}>
             
             <Route path="/home" element={<VendorDashboard/>}></Route>
+            <Route path="/password" element={<ChangePassword/>}></Route>
             </Route>
             
 

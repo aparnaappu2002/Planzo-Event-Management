@@ -1,6 +1,7 @@
 import { uploadImageCloudinary } from "@/services/ApiServiceClients";
 import { vendorSignup,verifyOtpVendor,resendOtpVendor,
-    updateProfileImageVendor
+    updateProfileImageVendor,updateVendorDetails,
+    changePasswordVendor
  } from "@/services/ApiServiceVendor";
 import { useMutation,useQuery } from "@tanstack/react-query";
 
@@ -55,3 +56,15 @@ export const useUpdateProfileImageMutation = () => {
         mutationFn: ({ id, imageUrl }: { id: string, imageUrl: string }) => updateProfileImageVendor(id, imageUrl)
     })
 }
+
+export const useUpdateVendorDetailsMutation = () => {
+    return useMutation({
+        mutationFn: ({ id, about, phone, name }: { id: string, about: string, phone: string, name: string }) => updateVendorDetails(id, about, phone, name)
+    })
+}
+export const useVendorChangePassword = () => {
+    return useMutation({
+        mutationFn: ({ userId, oldPassword, newPassword }: { userId: string, oldPassword: string, newPassword: string }) => changePasswordVendor(userId, oldPassword, newPassword)
+    })
+}
+

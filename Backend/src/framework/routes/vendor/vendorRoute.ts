@@ -1,6 +1,7 @@
 import { Request,Response,Router } from "express";
 import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController,
-    injectedUpdateImageVendorController
+    injectedUpdateImageVendorController,injectedUpdateAboutAndPhoneController,
+    injectedChangePasswordVendorController
  } from "../../Inject/vendorInject";
 
 
@@ -26,6 +27,12 @@ export class VendorRoute {
         })
         this.vendorRoute.post('/updateProfileImage',  (req: Request, res: Response) => {
             injectedUpdateImageVendorController.handleUpdateImageVendor(req, res)
+        })
+        this.vendorRoute.patch('/updateDetailsVendor',  (req: Request, res: Response) => {
+            injectedUpdateAboutAndPhoneController.handleUpdateAboutAndPhone(req, res)
+        })
+        this.vendorRoute.patch('/changePassword', (req: Request, res: Response) => {
+            injectedChangePasswordVendorController.handleChangePasswordVendor(req, res)
         })
     }
 }

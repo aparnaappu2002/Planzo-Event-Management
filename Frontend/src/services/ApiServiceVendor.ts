@@ -75,3 +75,23 @@ export const updateProfileImageVendor = async (id: string, imageUrl: string) => 
         throw new Error('error while updating image vendor side')
     }
 }
+export const updateVendorDetails = async (id: string, about: string, phone: string, name: string) => {
+    try {
+        const response = await axios.patch('/updateDetailsVendor', { id, about, phone, name })
+        return response.data
+    } catch (error) {
+        console.log('error while updating vendor details', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('error while updating vendor details')
+    }
+}
+export const changePasswordVendor = async (userId: string, newPassword: string, oldPassword: string) => {
+    try {
+        const response = await axios.patch('/changePassword', { userId, oldPassword, newPassword })
+        return response.data
+    } catch (error) {
+        console.log('error while changing password vendor', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('error whiel changing password vendor')
+    }
+}

@@ -14,6 +14,15 @@ import { RedisService } from "../services/redisService";
 import { LoginVendorController } from "../../adapters/controllers/vendor/authentication/loginVendorController";
 import { ProfileImageUpdateUseCase } from "../../useCases/vendor/profile/profileImageUpdate";
 import { UpdateImageVendorController } from "../../adapters/controllers/vendor/profile/updateImageController";
+import { UpdateAboutAndPhoneVendorController } from "../../adapters/controllers/vendor/profile/updateProfileDetails";
+import { updateAboutAndPhoneUseCase } from "../../useCases/vendor/profile/updateVendorProfile";
+import { ChangePasswordVendorControler } from "../../adapters/controllers/vendor/profile/changePasswordVendorController";
+import { ChangePasswordVendorUseCase } from "../../useCases/vendor/profile/changePassword";
+import { hashPassword } from "../hashPassword/hashPassword";
+
+
+
+
 
 //Register Vendor
 const EmailService = new emailService()
@@ -35,3 +44,11 @@ export const injectedVendorLoginController = new LoginVendorController(vendorLog
 //update profile image of vendor
 const updateImageVendorUseCase = new ProfileImageUpdateUseCase(vendorRespository)
 export const injectedUpdateImageVendorController = new UpdateImageVendorController(updateImageVendorUseCase)
+//update vedor details
+const UpdateAboutAndPhoneUseCase = new updateAboutAndPhoneUseCase(vendorRespository)
+export const injectedUpdateAboutAndPhoneController = new UpdateAboutAndPhoneVendorController(UpdateAboutAndPhoneUseCase)
+
+//change password
+const HashPassword = new hashPassword()
+const changePasswordUseCase = new ChangePasswordVendorUseCase(vendorRespository, HashPassword)
+export const injectedChangePasswordVendorController = new ChangePasswordVendorControler(changePasswordUseCase)
