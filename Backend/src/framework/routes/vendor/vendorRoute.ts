@@ -1,7 +1,7 @@
 import { Request,Response,Router } from "express";
 import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController,
     injectedUpdateImageVendorController,injectedUpdateAboutAndPhoneController,
-    injectedChangePasswordVendorController
+    injectedChangePasswordVendorController,injectedEventCreationController,injectedFindAllEventsVendorController,injectedUpdateEventController
  } from "../../Inject/vendorInject";
 
 
@@ -34,5 +34,15 @@ export class VendorRoute {
         this.vendorRoute.patch('/changePassword', (req: Request, res: Response) => {
             injectedChangePasswordVendorController.handleChangePasswordVendor(req, res)
         })
+        this.vendorRoute.post('/createEvent/:vendorId',  (req: Request, res: Response) => {
+            injectedEventCreationController.handleCreateEvent(req, res)
+        })
+        this.vendorRoute.get('/showEvents/:pageNo/:vendorId',  (req: Request, res: Response) => {
+            injectedFindAllEventsVendorController.handleFindAllEventsVendor(req, res)
+        })
+        this.vendorRoute.put('/updateEvent',  (req: Request, res: Response) => {
+            injectedUpdateEventController.handleUpdateEvent(req, res)
+        })
     }
 }
+

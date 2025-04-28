@@ -19,9 +19,13 @@ import { updateAboutAndPhoneUseCase } from "../../useCases/vendor/profile/update
 import { ChangePasswordVendorControler } from "../../adapters/controllers/vendor/profile/changePasswordVendorController";
 import { ChangePasswordVendorUseCase } from "../../useCases/vendor/profile/changePassword";
 import { hashPassword } from "../hashPassword/hashPassword";
-
-
-
+import { EventRepository } from "../../adapters/repository/event/eventRepository";
+import { EventCreationUseCase } from "../../useCases/vendor/event/eventCreationUseCase";
+import { EventCreationController } from "../../adapters/controllers/vendor/event/eventCreateController";
+import { FindAllEventsVendorUseCase } from "../../useCases/vendor/event/findAllEventsUseCase";
+import { FindAllEventsVendorController } from "../../adapters/controllers/vendor/event/findAllEventsController";
+import { UpdateEventUseCase } from "../../useCases/vendor/event/updateEventUseCase";
+import { UpdateEventController } from "../../adapters/controllers/vendor/event/updateEventController";
 
 
 //Register Vendor
@@ -52,3 +56,13 @@ export const injectedUpdateAboutAndPhoneController = new UpdateAboutAndPhoneVend
 const HashPassword = new hashPassword()
 const changePasswordUseCase = new ChangePasswordVendorUseCase(vendorRespository, HashPassword)
 export const injectedChangePasswordVendorController = new ChangePasswordVendorControler(changePasswordUseCase)
+//create event
+const eventRepository = new EventRepository()
+const eventCreationUseCase = new EventCreationUseCase(eventRepository)
+export const injectedEventCreationController = new EventCreationController(eventCreationUseCase)
+//find all events
+const findAllEventsVendorUseCase = new FindAllEventsVendorUseCase(eventRepository)
+export const injectedFindAllEventsVendorController = new FindAllEventsVendorController(findAllEventsVendorUseCase)
+//update event
+const updateEventUseCase = new UpdateEventUseCase(eventRepository)
+export const injectedUpdateEventController = new UpdateEventController(updateEventUseCase)
