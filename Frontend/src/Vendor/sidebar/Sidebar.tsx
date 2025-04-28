@@ -14,7 +14,8 @@ import {
   Wallet,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  ListChecks
 } from "lucide-react"
 
 // Define the menu item type
@@ -44,7 +45,8 @@ const menuItems: MenuItem[] = [
   { id: "services", label: "Service", icon: Briefcase, path: "/vendor/dashboard/services" },
   { id: "workSamples", label: "Work Samples", icon: ImageIcon, path: "/vendor/dashboard/samples" },
   { id: "bookings", label: "Bookings", icon: Calendar, path: "/vendor/dashboard/bookings" },
-  { id: "events", label: "Events", icon: CalendarDays, path: "/vendor/dashboard/events" },
+  { id: "events", label: "Events", icon: CalendarDays, path: "/vendor/addEvents" },
+  { id: "eventManagement", label: "Event Management", icon: ListChecks, path: "/vendor/manageEvents" },
   { id: "changePassword", label: "Change Password", icon: Lock, path: "/vendor/password" },
   { id: "wallet", label: "Wallet", icon: Wallet, path: "/vendor/dashboard/wallet" },
 ]

@@ -1,5 +1,7 @@
 import axios from '../axios/vendorAxios'
 import clodAxios,{isAxiosError} from 'axios'
+import { EventUpdateEntity } from '@/types/updateEventType';
+import { EventType } from 'react-hook-form';
 interface VendorData {
     name: string;
     email: string;
@@ -33,7 +35,7 @@ export const verifyOtpVendor = async ({ formdata, otpString }: { formdata: Recor
         if (isAxiosError(error)) {
             throw new Error(error.response?.data?.message || "OTP verification failed"); // ✅ Throw the error
         }
-        throw new Error("Unknown error occurred during OTP verification"); // ✅ Always throw an error
+        throw new Error("Unknown error occurred during OTP verification"); 
 
     }
 }
@@ -93,5 +95,37 @@ export const changePasswordVendor = async (userId: string, newPassword: string, 
         console.log('error while changing password vendor', error)
         if (isAxiosError(error)) throw new Error(error.response?.data.error)
         throw new Error('error whiel changing password vendor')
+    }
+}
+export const createEvent = async (event: EventType, vendorId: string) => {
+    try {
+        const response = await axios.post(`/createEvent/${vendorId}`, { event })
+        return response.data
+    } catch (error) {
+        console.log('error while creating event', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('Error whilw creating event')
+    }
+}
+
+export const findAllEventsInVendor = async (vendorId: string, pageNo: number) => {
+    try {
+        const response = await axios.get(`/showEvents/${pageNo}/${vendorId}`)
+        return response.data
+    } catch (error) {
+        console.log('error while fetching events in vendor side', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('error while fetching events in vendor side')
+    }
+}
+
+export const updateEvent = async (eventId: string, update: EventUpdateEntity) => {
+    try {
+        const response = await axios.put('/updateEvent', { eventId, update })
+        return response.data
+    } catch (error) {
+        console.log('error while updating event', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('Error while updating event')
     }
 }

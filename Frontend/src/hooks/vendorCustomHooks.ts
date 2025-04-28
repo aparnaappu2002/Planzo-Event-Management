@@ -1,9 +1,11 @@
 import { uploadImageCloudinary } from "@/services/ApiServiceClients";
 import { vendorSignup,verifyOtpVendor,resendOtpVendor,
     updateProfileImageVendor,updateVendorDetails,
-    changePasswordVendor
+    changePasswordVendor,createEvent,updateEvent,findAllEventsInVendor
  } from "@/services/ApiServiceVendor";
 import { useMutation,useQuery } from "@tanstack/react-query";
+import { EventType } from "@/types/EventType";
+import { EventUpdateEntity } from "@/types/updateEventType";
 
 
 
@@ -68,3 +70,21 @@ export const useVendorChangePassword = () => {
     })
 }
 
+export const useCreateEvent = () => {
+    return useMutation({
+        mutationFn: ({ event, vendorId }: { event: EventType, vendorId: string }) => createEvent(event, vendorId)
+    })
+}
+
+export const useFindAllEventsVendorSide = (vendorId: string, pageNo: number) => {
+    return useQuery({
+        queryKey: ['eventsInVendor', pageNo],
+        queryFn: () => findAllEventsInVendor(vendorId, pageNo)
+    })
+}
+
+export const useUpdateEvent = () => {
+    return useMutation({
+        mutationFn: ({ eventId, update }: { eventId: string, update: EventUpdateEntity }) => updateEvent(eventId, update)
+    })
+}

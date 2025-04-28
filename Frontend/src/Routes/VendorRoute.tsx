@@ -4,6 +4,8 @@ import VendorLogin from "@/Vendor/login/VendorLogin";
 import VendorDashboard from "@/Vendor/home/VendorDashboard";
 import { VendorLayout } from "@/Vendor/sidebar/Sidebar";
 import ChangePassword from "@/Vendor/changePassword/ChangePassword";
+import EventCreationForm from "@/Vendor/event/EventCreation";
+import EventManagementPage from "@/Vendor/event/EventManagement";
 
 
 
@@ -16,6 +18,8 @@ const VendorRoute=()=>{
             
             <Route path="/home" element={<VendorDashboard/>}></Route>
             <Route path="/password" element={<ChangePassword/>}></Route>
+            <Route path="/addEvents" element={<EventCreationForm/>}></Route>
+            <Route path="/manageEvents" element={<EventManagementPage/>}></Route>
             </Route>
             
 
