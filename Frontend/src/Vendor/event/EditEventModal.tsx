@@ -2,7 +2,7 @@
 
 import React, { Fragment, useState, useEffect } from "react"
 import { Dialog, Transition } from "@headlessui/react"
-import { Calendar, Clock, MapPin, Users, X, Tag, DollarSign, Check } from "lucide-react"
+import { Calendar, Clock, MapPin, Users, X, Tag, DollarSign, Check, AlertCircle } from "lucide-react"
 import { EventUpdateEntity } from "@/types/updateEventType"
 
 // Use the EventType interface
@@ -36,6 +36,20 @@ interface EditEventModalProps {
   onClose: () => void
   onUpdate: (eventId: string, update: EventUpdateEntity) => void
   isLoading: boolean
+}
+
+interface ValidationErrors {
+  title?: string
+  description?: string
+  latitude?: string
+  longitude?: string
+  date?: string
+  startTime?: string
+  endTime?: string
+  pricePerTicket?: string
+  totalTicket?: string
+  maxTicketsPerUser?: string
+  category?: string
 }
 
 const categoryOptions = [
@@ -75,6 +89,43 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
   const [category, setCategory] = useState(event.category || categoryOptions[0])
   const [status, setStatus] = useState<"upcoming" | "completed" | "cancelled">(event.status || "upcoming")
   
+  // Validation state
+  const [errors, setErrors] = useState<ValidationErrors>({})
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({})
+
+  // Helper functions for time format conversion
+  const convert24To12Format = (time24: string): string => {
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours, 10);
+    
+    if (hour === 0) {
+      return `12:${minutes} AM`;
+    } else if (hour < 12) {
+      return `${hour}:${minutes} AM`;
+    } else if (hour === 12) {
+      return `12:${minutes} PM`;
+    } else {
+      return `${hour - 12}:${minutes} PM`;
+    }
+  };
+  
+  const convert12To24Format = (time12: string): string => {
+    if (!time12) return '';
+    
+    const [timePart, modifier] = time12.split(' ');
+    let [hours, minutes] = timePart.split(':');
+    
+    if (hours === '12') {
+      hours = '00';
+    }
+    
+    if (modifier === 'PM') {
+      hours = (parseInt(hours, 10) + 12).toString();
+    }
+    
+    return `${hours.padStart(2, '0')}:${minutes}`;
+  };
+
   // Convert date and time for form fields
   useEffect(() => {
     if (event.date && event.date.length > 0) {
@@ -90,7 +141,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     if (event.startTime) {
       try {
         const start = new Date(event.startTime)
-        setStartTime(start.toISOString().split('T')[1].substring(0, 5))
+        const time24 = start.toISOString().split('T')[1].substring(0, 5)
+        setStartTime(convert24To12Format(time24))
       } catch (error) {
         console.error("Invalid start time format", error)
         setStartTime("")
@@ -100,7 +152,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     if (event.endTime) {
       try {
         const end = new Date(event.endTime)
-        setEndTime(end.toISOString().split('T')[1].substring(0, 5))
+        const time24 = end.toISOString().split('T')[1].substring(0, 5)
+        setEndTime(convert24To12Format(time24))
       } catch (error) {
         console.error("Invalid end time format", error)
         setEndTime("")
@@ -108,8 +161,118 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
     }
   }, [event])
 
+  // Validate the form data against schema requirements
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {}
+    
+    // Title validation (required)
+    if (!title.trim()) {
+      newErrors.title = "Event title is required"
+    }
+    
+    // Description validation (required)
+    if (!description.trim()) {
+      newErrors.description = "Event description is required"
+    }
+    
+    // Location validation (required)
+    if (!latitude || isNaN(parseFloat(latitude))) {
+      newErrors.latitude = "Valid latitude is required"
+    }
+    
+    if (!longitude || isNaN(parseFloat(longitude))) {
+      newErrors.longitude = "Valid longitude is required"
+    }
+    
+    // Date validation (required)
+    if (!eventDate) {
+      newErrors.date = "Event date is required"
+    }
+    
+    // Time validation (required and format)
+    const timeFormatRegex = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(AM|PM|am|pm)$/;
+    
+    if (!startTime) {
+      newErrors.startTime = "Start time is required"
+    } else if (!timeFormatRegex.test(startTime)) {
+      newErrors.startTime = "Invalid time format. Use HH:MM AM/PM"
+    }
+    
+    if (!endTime) {
+      newErrors.endTime = "End time is required"
+    } else if (!timeFormatRegex.test(endTime)) {
+      newErrors.endTime = "Invalid time format. Use HH:MM AM/PM"
+    } else if (startTime && endTime && timeFormatRegex.test(startTime) && timeFormatRegex.test(endTime)) {
+      // Check if end time is after start time
+      try {
+        const startTime24 = convert12To24Format(startTime)
+        const endTime24 = convert12To24Format(endTime)
+        
+        const startDateTime = new Date(`${eventDate}T${startTime24}:00`)
+        const endDateTime = new Date(`${eventDate}T${endTime24}:00`)
+        
+        if (endDateTime <= startDateTime) {
+          newErrors.endTime = "End time must be after start time"
+        }
+      } catch (error) {
+        console.error("Time comparison error:", error)
+        newErrors.endTime = "Invalid time format"
+      }
+    }
+    
+    // Price validation (required)
+    if (pricePerTicket === "" || isNaN(parseFloat(pricePerTicket)) || parseFloat(pricePerTicket) < 0) {
+      newErrors.pricePerTicket = "Valid ticket price is required (min: 0)"
+    }
+    
+    // Total tickets validation (required)
+    if (totalTicket === "" || isNaN(parseInt(totalTicket)) || parseInt(totalTicket) <= 0) {
+      newErrors.totalTicket = "Valid total tickets value is required (min: 1)"
+    }
+    
+    // Max tickets per user validation (required)
+    if (maxTicketsPerUser === "" || isNaN(parseInt(maxTicketsPerUser)) || parseInt(maxTicketsPerUser) <= 0) {
+      newErrors.maxTicketsPerUser = "Valid max tickets per user is required (min: 1)"
+    } else if (parseInt(maxTicketsPerUser) > parseInt(totalTicket)) {
+      newErrors.maxTicketsPerUser = "Max tickets per user cannot exceed total tickets"
+    }
+    
+    // Category validation (required)
+    if (!category) {
+      newErrors.category = "Category is required"
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  // Mark field as touched when it loses focus
+  const handleBlur = (field: string) => {
+    setTouchedFields(prev => ({ ...prev, [field]: true }))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate form before submission
+    const isValid = validateForm()
+    
+    // Mark all fields as touched on submit attempt
+    const allFields = [
+      'title', 'description', 'latitude', 'longitude', 
+      'date', 'startTime', 'endTime', 'pricePerTicket', 
+      'totalTicket', 'maxTicketsPerUser', 'category'
+    ]
+    const allTouched = allFields.reduce((acc, field) => {
+      acc[field] = true
+      return acc
+    }, {} as Record<string, boolean>)
+    
+    setTouchedFields(allTouched)
+    
+    if (!isValid) {
+      return
+    }
     
     // Create the update object
     const update: EventUpdateEntity = {
@@ -134,19 +297,26 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
       update.date = [dateObj]
     }
     
+    // Convert 12-hour times to 24-hour format for backend storage
     if (eventDate && startTime) {
-      const startDateTime = new Date(`${eventDate}T${startTime}:00`)
+      const time24 = convert12To24Format(startTime)
+      const startDateTime = new Date(`${eventDate}T${time24}:00`)
       update.startTime = startDateTime
     }
     
     if (eventDate && endTime) {
-      const endDateTime = new Date(`${eventDate}T${endTime}:00`)
+      const time24 = convert12To24Format(endTime)
+      const endDateTime = new Date(`${eventDate}T${time24}:00`)
       update.endTime = endDateTime
     }
     
     // Call the update function
     onUpdate(event._id, update)
   }
+
+  // Helper function to show error message if field is touched and has error
+  const showError = (field: keyof ValidationErrors) => 
+    touchedFields[field] && errors[field]
 
   // Simple modal version that doesn't rely on headlessui
   if (!isOpen) return null
@@ -177,37 +347,53 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
               {/* Title */}
               <div>
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                  Event Title
+                  Event Title *
                 </label>
                 <input
                   type="text"
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                  required
+                  onBlur={() => handleBlur('title')}
+                  className={`mt-1 block w-full rounded-md border ${
+                    showError('title') ? 'border-red-300' : 'border-gray-300'
+                  } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                 />
+                {showError('title') && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.title}
+                  </p>
+                )}
               </div>
               
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                  Description
+                  Description *
                 </label>
                 <textarea
                   id="description"
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                  required
+                  onBlur={() => handleBlur('description')}
+                  className={`mt-1 block w-full rounded-md border ${
+                    showError('description') ? 'border-red-300' : 'border-gray-300'
+                  } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                 />
+                {showError('description') && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.description}
+                  </p>
+                )}
               </div>
               
               {/* Venue */}
               <div>
                 <label htmlFor="venueName" className="block text-sm font-medium text-gray-700">
-                  Venue Name
+                  Venue Name (Optional)
                 </label>
                 <div className="mt-1 flex items-center">
                   <MapPin className="h-5 w-5 text-gray-400" />
@@ -224,7 +410,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
               {/* Address */}
               <div>
                 <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                  Address
+                  Address (Optional)
                 </label>
                 <input
                   type="text"
@@ -239,36 +425,52 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="latitude" className="block text-sm font-medium text-gray-700">
-                    Latitude
+                    Latitude *
                   </label>
                   <input
                     type="text"
                     id="latitude"
                     value={latitude}
                     onChange={(e) => setLatitude(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                    required
+                    onBlur={() => handleBlur('latitude')}
+                    className={`mt-1 block w-full rounded-md border ${
+                      showError('latitude') ? 'border-red-300' : 'border-gray-300'
+                    } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                   />
+                  {showError('latitude') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.latitude}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="longitude" className="block text-sm font-medium text-gray-700">
-                    Longitude
+                    Longitude *
                   </label>
                   <input
                     type="text"
                     id="longitude"
                     value={longitude}
                     onChange={(e) => setLongitude(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                    required
+                    onBlur={() => handleBlur('longitude')}
+                    className={`mt-1 block w-full rounded-md border ${
+                      showError('longitude') ? 'border-red-300' : 'border-gray-300'
+                    } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                   />
+                  {showError('longitude') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.longitude}
+                    </p>
+                  )}
                 </div>
               </div>
               
               {/* Date */}
               <div>
                 <label htmlFor="date" className="block text-sm font-medium text-gray-700">
-                  Event Date
+                  Event Date *
                 </label>
                 <div className="mt-1 flex items-center">
                   <Calendar className="h-5 w-5 text-gray-400" />
@@ -277,45 +479,77 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     id="date"
                     value={eventDate}
                     onChange={(e) => setEventDate(e.target.value)}
-                    className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                    required
+                    onBlur={() => handleBlur('date')}
+                    className={`ml-2 block w-full rounded-md border ${
+                      showError('date') ? 'border-red-300' : 'border-gray-300'
+                    } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                   />
                 </div>
+                {showError('date') && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.date}
+                  </p>
+                )}
               </div>
               
               {/* Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
-                    Start Time
+                    Start Time *
                   </label>
-                  <div className="mt-1 flex items-center">
-                    <Clock className="h-5 w-5 text-gray-400" />
-                    <input
-                      type="time"
-                      id="startTime"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                      required
-                    />
+                  <div className="relative">
+                    <div className="mt-1 flex items-center">
+                      <Clock className="h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        id="startTime"
+                        placeholder="e.g., 9:00 AM"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        onBlur={() => handleBlur('startTime')}
+                        className={`ml-2 block w-full rounded-md border ${
+                          showError('startTime') ? 'border-red-300' : 'border-gray-300'
+                        } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Format: HH:MM AM/PM</p>
                   </div>
+                  {showError('startTime') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.startTime}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
-                    End Time
+                    End Time *
                   </label>
-                  <div className="mt-1 flex items-center">
-                    <Clock className="h-5 w-5 text-gray-400" />
-                    <input
-                      type="time"
-                      id="endTime"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                      required
-                    />
+                  <div className="relative">
+                    <div className="mt-1 flex items-center">
+                      <Clock className="h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        id="endTime"
+                        placeholder="e.g., 5:00 PM"
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        onBlur={() => handleBlur('endTime')}
+                        className={`ml-2 block w-full rounded-md border ${
+                          showError('endTime') ? 'border-red-300' : 'border-gray-300'
+                        } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Format: HH:MM AM/PM</p>
                   </div>
+                  {showError('endTime') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.endTime}
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -323,7 +557,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="pricePerTicket" className="block text-sm font-medium text-gray-700">
-                    Price Per Ticket (₹)
+                    Price Per Ticket (₹) *
                   </label>
                   <div className="mt-1 flex items-center">
                     <DollarSign className="h-5 w-5 text-gray-400" />
@@ -334,14 +568,22 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                       step="0.01"
                       value={pricePerTicket}
                       onChange={(e) => setPricePerTicket(e.target.value)}
-                      className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                      required
+                      onBlur={() => handleBlur('pricePerTicket')}
+                      className={`ml-2 block w-full rounded-md border ${
+                        showError('pricePerTicket') ? 'border-red-300' : 'border-gray-300'
+                      } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                     />
                   </div>
+                  {showError('pricePerTicket') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.pricePerTicket}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="totalTicket" className="block text-sm font-medium text-gray-700">
-                    Total Tickets
+                    Total Tickets *
                   </label>
                   <div className="mt-1 flex items-center">
                     <Users className="h-5 w-5 text-gray-400" />
@@ -351,14 +593,22 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                       min="1"
                       value={totalTicket}
                       onChange={(e) => setTotalTicket(e.target.value)}
-                      className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                      required
+                      onBlur={() => handleBlur('totalTicket')}
+                      className={`ml-2 block w-full rounded-md border ${
+                        showError('totalTicket') ? 'border-red-300' : 'border-gray-300'
+                      } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                     />
                   </div>
+                  {showError('totalTicket') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.totalTicket}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="maxTicketsPerUser" className="block text-sm font-medium text-gray-700">
-                    Max Per User
+                    Max Per User *
                   </label>
                   <div className="mt-1 flex items-center">
                     <Users className="h-5 w-5 text-gray-400" />
@@ -368,17 +618,25 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                       min="1"
                       value={maxTicketsPerUser}
                       onChange={(e) => setMaxTicketsPerUser(e.target.value)}
-                      className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                      required
+                      onBlur={() => handleBlur('maxTicketsPerUser')}
+                      className={`ml-2 block w-full rounded-md border ${
+                        showError('maxTicketsPerUser') ? 'border-red-300' : 'border-gray-300'
+                      } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                     />
                   </div>
+                  {showError('maxTicketsPerUser') && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.maxTicketsPerUser}
+                    </p>
+                  )}
                 </div>
               </div>
               
               {/* Category */}
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700">
-                  Category
+                  Category *
                 </label>
                 <div className="mt-1 flex items-center">
                   <Tag className="h-5 w-5 text-gray-400" />
@@ -386,8 +644,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     id="category"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="ml-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm"
-                    required
+                    onBlur={() => handleBlur('category')}
+                    className={`ml-2 block w-full rounded-md border ${
+                      showError('category') ? 'border-red-300' : 'border-gray-300'
+                    } shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm`}
                   >
                     {categoryOptions.map((cat) => (
                       <option key={cat} value={cat}>
@@ -396,6 +656,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     ))}
                   </select>
                 </div>
+                {showError('category') && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.category}
+                  </p>
+                )}
               </div>
               
               {/* Status */}
@@ -442,6 +708,11 @@ const EditEventModal: React.FC<EditEventModalProps> = ({
                     </label>
                   </span>
                 </div>
+              </div>
+              
+              {/* Required fields note */}
+              <div className="text-sm text-gray-500 italic mt-4">
+                * Required fields
               </div>
             </div>
 

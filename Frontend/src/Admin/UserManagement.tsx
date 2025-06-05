@@ -1,10 +1,19 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useFetchClientAdminQuery, useBlockClient, useUnblockClient } from "@/hooks/adminCustomHooks"
 import { toast } from "react-toastify"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 // Types
 interface Client {
@@ -18,14 +27,10 @@ interface Client {
 const UserManagementPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const queryClient = useQueryClient()
-  
+
   // Fetch clients data
-  const {
-    data,
-    isLoading,
-    error
-  } = useFetchClientAdminQuery(currentPage)
-  
+  const { data, isLoading, error } = useFetchClientAdminQuery(currentPage)
+
   // Block/Unblock mutation hooks
   const blockClient = useBlockClient()
   const unblockClient = useUnblockClient()
@@ -33,19 +38,35 @@ const UserManagementPage: React.FC = () => {
   // Get clients from the query data
   const clientsData = data?.clients || []
 
-  const handleBlockAndUnblock = async ({ userId, isCurrentlyBlocked }: { userId: string, isCurrentlyBlocked: boolean }) => {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [pendingAction, setPendingAction] = useState<{ userId: string; isCurrentlyBlocked: boolean } | null>(null)
+
+  const handleBlockAndUnblock = async ({
+    userId,
+    isCurrentlyBlocked,
+  }: { userId: string; isCurrentlyBlocked: boolean }) => {
+    // Show confirmation dialog and store pending action
+    setShowConfirmDialog(true)
+    setPendingAction({ userId, isCurrentlyBlocked })
+  }
+
+  const confirmAction = async () => {
+    if (!pendingAction) return
+
+    const { userId, isCurrentlyBlocked } = pendingAction
+
     try {
-      const queryKey = ['clients', currentPage]
-      
+      const queryKey = ["clients", currentPage]
+
       // Optimistically update the UI
       queryClient.setQueryData(queryKey, (oldData: any) => {
         if (!oldData) return oldData
-        
+
         return {
           ...oldData,
-          clients: oldData.clients.map((client: Client) => 
-            client._id === userId ? { ...client, isBlocked: !isCurrentlyBlocked } : client
-          )
+          clients: oldData.clients.map((client: Client) =>
+            client._id === userId ? { ...client, isBlocked: !isCurrentlyBlocked } : client,
+          ),
         }
       })
 
@@ -59,7 +80,7 @@ const UserManagementPage: React.FC = () => {
             toast.error(error.message || "Failed to block user")
             // Revert the optimistic update
             queryClient.invalidateQueries({ queryKey })
-          }
+          },
         })
       } else {
         // Unblock the user
@@ -71,14 +92,23 @@ const UserManagementPage: React.FC = () => {
             toast.error(error.message || "Failed to unblock user")
             // Revert the optimistic update
             queryClient.invalidateQueries({ queryKey })
-          }
+          },
         })
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to update user status")
       // Ensure queries are invalidated on error
-      queryClient.invalidateQueries({ queryKey: ['clients', currentPage] })
+      queryClient.invalidateQueries({ queryKey: ["clients", currentPage] })
+    } finally {
+      // Close dialog and clear pending action
+      setShowConfirmDialog(false)
+      setPendingAction(null)
     }
+  }
+
+  const cancelAction = () => {
+    setShowConfirmDialog(false)
+    setPendingAction(null)
   }
 
   const handlePageChange = (page: number) => {
@@ -177,10 +207,12 @@ const UserManagementPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
-                        onClick={() => handleBlockAndUnblock({
-                          userId: client._id,
-                          isCurrentlyBlocked: client.isBlocked
-                        })}
+                        onClick={() =>
+                          handleBlockAndUnblock({
+                            userId: client._id,
+                            isCurrentlyBlocked: client.isBlocked,
+                          })
+                        }
                         disabled={blockClient.isPending || unblockClient.isPending}
                         className={`px-3 py-1 rounded-md ${
                           client.isBlocked
@@ -188,8 +220,8 @@ const UserManagementPage: React.FC = () => {
                             : "bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
                         } transition-colors duration-200`}
                       >
-                        {(blockClient.isPending && blockClient.variables === client._id) || 
-                         (unblockClient.isPending && unblockClient.variables === client._id)
+                        {(blockClient.isPending && blockClient.variables === client._id) ||
+                        (unblockClient.isPending && unblockClient.variables === client._id)
                           ? "Processing..."
                           : client.isBlocked
                             ? "Unblock"
@@ -282,6 +314,41 @@ const UserManagementPage: React.FC = () => {
             </div>
           )}
         </div>
+        {/* Confirmation Dialog */}
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{pendingAction?.isCurrentlyBlocked ? "Unblock User" : "Block User"}</DialogTitle>
+              <DialogDescription>
+                {pendingAction?.isCurrentlyBlocked
+                  ? "Are you sure you want to unblock this user? They will regain access to the platform."
+                  : "Are you sure you want to block this user? They will lose access to the platform."}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-start">
+              <Button
+                type="button"
+                variant={pendingAction?.isCurrentlyBlocked ? "default" : "destructive"}
+                onClick={confirmAction}
+                disabled={blockClient.isPending || unblockClient.isPending}
+              >
+                {blockClient.isPending || unblockClient.isPending
+                  ? "Processing..."
+                  : pendingAction?.isCurrentlyBlocked
+                    ? "Yes, Unblock"
+                    : "Yes, Block"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={cancelAction}
+                disabled={blockClient.isPending || unblockClient.isPending}
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
