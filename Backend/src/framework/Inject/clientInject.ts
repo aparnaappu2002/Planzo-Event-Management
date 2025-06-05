@@ -19,6 +19,10 @@ import { ChangePasswordClientUseCase } from "../../useCases/client/profile/chang
 import { ChangePasswordClientController } from "../../adapters/controllers/client/profile/changePasswordClientController";
 import { ChangeProfileImageClientUseCase } from "../../useCases/client/profile/changeProfileImageUseCase";
 import { ChangeProfileImageClientController } from "../../adapters/controllers/client/profile/changeProfileImageClientController";
+import { SendResetEmailForForgetPassword } from "../../useCases/client/authentication/sendResetForgotPassword";
+import { PasswordResetService } from "../services/resetEmailService";
+import { TokenService } from "../services/tokenService";
+import { SendResetEmailToClient } from "../../adapters/controllers/client/authentication/sendForgetPasswordEmail";
 
 
 
@@ -28,6 +32,7 @@ import { ChangeProfileImageClientController } from "../../adapters/controllers/c
 //Signup
 const otpService=new OtpService()
 const EmailService=new emailService()
+
 const ClientRepository = new clientRepository()
 const vendorDatabase = new VendorDatabase()
 const userExistence=new userExistance(ClientRepository,vendorDatabase)
@@ -56,3 +61,10 @@ export const injectedChangeClientPasswordController = new ChangePasswordClientCo
 //update profile image
 const changeProfileImageClientUseCase = new ChangeProfileImageClientUseCase(ClientRepository)
 export const injectedChangeProfileImageClientController = new ChangeProfileImageClientController(changeProfileImageClientUseCase)
+
+
+//send mail for forgot password
+const PasswordResetMailService=new PasswordResetService()
+const Tokenservice = new TokenService(jwtService);
+const sendMailForForgotPasswordUseCase=new SendResetEmailForForgetPassword(PasswordResetMailService,Tokenservice,ClientRepository)
+export const injectedSendMailForgetPasswordController = new SendResetEmailToClient(sendMailForForgotPasswordUseCase)

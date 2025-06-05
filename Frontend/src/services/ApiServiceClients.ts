@@ -126,3 +126,16 @@ export const uploadImageCloudinary = async (formdata: FormData) => {
         throw 'error while uploading image'
     }
 }
+
+export const clientForgetPasswordEmail = async (email: string) => {
+    try {
+        const response = await axios.post('/sendEmailForgetPassword', { email })
+        return response.data
+    } catch (error) {
+        console.log('error while requesting otp for forget password', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data?.error)
+        }
+        throw new Error('error while requesting for otp in forget password')
+    }
+}

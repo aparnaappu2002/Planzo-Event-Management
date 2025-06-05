@@ -4,7 +4,7 @@ import { injectedClientLoginController,
     injectedGoogleLogincontroller,
     injectedUpdateProfileClientController,
     injectedChangeClientPasswordController,
-injectedChangeProfileImageClientController } from "../../Inject/clientInject"
+injectedChangeProfileImageClientController,injectedSendMailForgetPasswordController } from "../../Inject/clientInject"
 
 export class clientRoute{
     public clientRoute:Router
@@ -36,6 +36,9 @@ export class clientRoute{
         })
         this.clientRoute.patch('/updateProfileImage', (req: Request, res: Response) => {
             injectedChangeProfileImageClientController.handleUpdateProfileImageClient(req, res)
+        })
+        this.clientRoute.post('/sendEmailForgetPassword', (req: Request, res: Response) => {
+            injectedSendMailForgetPasswordController.handleSendResetEmail(req, res)
         })
     }
 }
