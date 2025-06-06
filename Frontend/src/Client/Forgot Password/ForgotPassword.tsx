@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, type FormEvent } from "react"
 import { useClientRequestForgetPassword } from "@/hooks/clientCustomHooks"
+import { useNavigate } from "react-router-dom"
 
 interface FormState {
   email: string
@@ -18,6 +19,7 @@ const ForgotPassword: React.FC = () => {
   })
 
   const [errors, setErrors] = useState<{ email?: string }>({})
+  const navigate=useNavigate()
 
   // Use the custom hook for API call
   const { mutate: requestOtp, isPending: isLoading } = useClientRequestForgetPassword()
@@ -97,6 +99,7 @@ const ForgotPassword: React.FC = () => {
     // This would typically navigate back to login page
     // Replace with your routing logic (React Router, etc.)
     console.log("Navigate back to login")
+    navigate('/login')
   }
 
   return (

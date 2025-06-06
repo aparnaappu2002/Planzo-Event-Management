@@ -2,7 +2,7 @@ import { useMutation,useQuery } from "@tanstack/react-query";
 import { clientSignup,clientCreateAccount,
     clientResendOtp,clientLogin,
     clientGoogleLogin,updateProfileClient,
-    changePasswordClient,clientForgetPasswordEmail,uploadImageCloudinary }
+    changePasswordClient,clientForgetPasswordEmail,uploadImageCloudinary,clientForgetPassword }
  from "../../src/services/ApiServiceClients";
 import { ClientUpdateProfileEntity } from "@/types/clientUpdateProfileType";
 
@@ -78,5 +78,19 @@ export const useUploadeImageToCloudinaryMutation = () => {
 export const useClientRequestForgetPassword = () => {
     return useMutation({
         mutationFn: (email: string) => clientForgetPasswordEmail(email)
+    })
+}
+
+export const useClientForgetPassword = () => {
+    return useMutation({
+        mutationFn: ({ 
+          email, 
+          newPassword, 
+          token 
+        }: { 
+          email: string, 
+          newPassword: string,
+          token: string 
+        }) => clientForgetPassword({ email, newPassword, token })
     })
 }

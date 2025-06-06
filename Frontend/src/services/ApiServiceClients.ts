@@ -139,3 +139,28 @@ export const clientForgetPasswordEmail = async (email: string) => {
         throw new Error('error while requesting for otp in forget password')
     }
 }
+
+export const clientForgetPassword = async ({ 
+  email, 
+  newPassword, 
+  token 
+}: { 
+  email: string, 
+  newPassword: string,
+  token: string 
+}) => {
+    try {
+        const response = await axios.post('/resetforgetPassword', { 
+          email, 
+          newPassword, 
+          token 
+        })
+        return response.data
+    } catch (error) {
+        console.log('error while forget password', error)
+        if (isAxiosError(error)) {
+            throw new Error(error?.response?.data.error)
+        }
+        throw new Error('error while forget password')
+    }
+}
