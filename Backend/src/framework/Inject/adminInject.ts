@@ -25,6 +25,7 @@ import { VendorBlockUseCase } from "../../useCases/admin/vendorManagement/vendor
 import { VendorBlockController } from "../../adapters/controllers/admin/vendor/vendorBlockController";
 import { VendorUnblockUseCase } from "../../useCases/admin/vendorManagement/vendorUnblockUseCase";
 import { VendorUnblockController } from "../../adapters/controllers/admin/vendor/vendorUnblockController";
+import { RejectVendorEmailService } from "../services/rejectVendorEmailService";
 
 
 
@@ -47,7 +48,8 @@ export const injectedFindAllPendingVendorController = new FindAllPendingVendorCo
 const approveVendorStatusUseCase = new ApproveVendor(vendorDataBase)
 export const injectedApproveVendorStatus = new ApproveVendorController(approveVendorStatusUseCase)
 //vendor reject
-const rejectVendorUseCase = new RejectVendorUseCase(vendorDataBase)
+const vendorEmailService=new RejectVendorEmailService()
+const rejectVendorUseCase = new RejectVendorUseCase(vendorDataBase,vendorEmailService)
 export const injectedRejectVendorController = new RejectVendorControllerAdmin(rejectVendorUseCase)
 //show all reject vendors
 const findRejectedVendorUseCase = new FindAllRejectedVendorUseCase(vendorDataBase)
