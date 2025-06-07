@@ -36,7 +36,7 @@ export default function VendorPendingModal({ isOpen, setIsOpen }: VendorPendingM
           <div className="py-5 px-7 pb-7 text-center text-[0.95rem] text-gray-600 border-t border-gray-100">
             
               <a
-                href="/login"
+                href="/vendor/login"
                 className="text-[#b8860b] no-underline font-semibold transition-colors duration-200 hover:text-[#d4a017] hover:underline"
               >
                 Go to Login
