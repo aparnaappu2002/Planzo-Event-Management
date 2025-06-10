@@ -3,7 +3,8 @@ import { injectedVendorAuthenticationController,injectedVendorLoginController,in
     injectedUpdateImageVendorController,injectedUpdateAboutAndPhoneController,
     injectedChangePasswordVendorController,injectedEventCreationController,injectedFindAllEventsVendorController,injectedUpdateEventController
  } from "../../Inject/vendorInject";
-
+ import { injectedVerifyTokenAndCheckBlacklistMiddleWare,injectedTokenExpiryValidationChecking,injectedVendorStatusCheckingMiddleware } from "../../Inject/serviceInject";
+import { checkRoleBaseMiddleware } from "../../../adapters/middlewares/roleBaseMiddleWare";
 
 
 export class VendorRoute {
@@ -25,13 +26,13 @@ export class VendorRoute {
         this.vendorRoute.post('/resendOtp', (req: Request, res: Response) => {
             injectedResendOtpVendorController.handleResendOtp(req, res)
         })
-        this.vendorRoute.post('/updateProfileImage',  (req: Request, res: Response) => {
+        this.vendorRoute.post('/updateProfileImage', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('vendor'), injectedVendorStatusCheckingMiddleware, (req: Request, res: Response) => {
             injectedUpdateImageVendorController.handleUpdateImageVendor(req, res)
         })
-        this.vendorRoute.patch('/updateDetailsVendor',  (req: Request, res: Response) => {
+        this.vendorRoute.patch('/updateDetailsVendor', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('vendor'), injectedVendorStatusCheckingMiddleware,  (req: Request, res: Response) => {
             injectedUpdateAboutAndPhoneController.handleUpdateAboutAndPhone(req, res)
         })
-        this.vendorRoute.patch('/changePassword', (req: Request, res: Response) => {
+        this.vendorRoute.patch('/changePassword', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('vendor'), injectedVendorStatusCheckingMiddleware, (req: Request, res: Response) => {
             injectedChangePasswordVendorController.handleChangePasswordVendor(req, res)
         })
         this.vendorRoute.post('/createEvent/:vendorId',  (req: Request, res: Response) => {

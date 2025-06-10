@@ -1,15 +1,20 @@
 import { ITokenService } from "../../domain/interfaces/serviceInterface/ITokenService";
 import { IjwtInterface } from "../../domain/interfaces/serviceInterface/IjwtService";
 import jwt from "jsonwebtoken";
+import { IredisService } from "../../domain/interfaces/serviceInterface/IredisService";
 
 export class TokenService implements ITokenService {
+    private redisService: IredisService
     private jwtService: IjwtInterface;
+    private accessSecretKey: string
     private readonly RESET_SECRET_KEY: string;
     private usedTokens: Set<string> = new Set(); // To prevent token reuse
 
-    constructor(jwtService: IjwtInterface) {
+    constructor(redisService: IredisService, jwtService: IjwtInterface, accessSecretKey: string) {
         this.jwtService = jwtService;
+        this.redisService = redisService
         this.RESET_SECRET_KEY = process.env.RESET_TOKEN_SECRET_KEY || 'reset-secret-key';
+        this.accessSecretKey = accessSecretKey
     }
 
     generateResetToken(email: string): string {
@@ -75,5 +80,13 @@ export class TokenService implements ITokenService {
                 this.usedTokens.delete(token);
             }
         }
+    }
+    async checkTokenBlacklist(token: string): Promise<boolean> {
+        const result = await this.redisService.get(`blacklist:${token}`)
+        return !!result
+    }
+
+    verifyToken(token: string) {
+        return this.jwtService.verifyAccessToken(token, this.accessSecretKey)
     }
 }

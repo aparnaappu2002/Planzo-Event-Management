@@ -164,3 +164,14 @@ export const clientForgetPassword = async ({
         throw new Error('error while forget password')
     }
 }
+
+export const clientLogout = async () => {
+    try {
+        const response = await axios.post('/logout')
+        return response.data
+    } catch (error) {
+        console.log('error while client logout', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('error while client logout')
+    }
+}

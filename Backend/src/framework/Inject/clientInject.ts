@@ -25,7 +25,8 @@ import { TokenService } from "../services/tokenService";
 import { SendResetEmailToClient } from "../../adapters/controllers/client/authentication/sendForgetPasswordEmail";
 import { ResetPasswordClientUseCase } from "../../useCases/client/authentication/forgotPasswordUseCase";
 import { ResetPasswordClient } from "../../adapters/controllers/client/authentication/resetForgotPassword";
-
+import { ClientLogoutUseCase } from "../../useCases/client/authentication/clientLogoutUseCase";
+import { ClientLogoutController } from "../../adapters/controllers/client/authentication/clientLogoutController";
 
 
 
@@ -67,7 +68,9 @@ export const injectedChangeProfileImageClientController = new ChangeProfileImage
 
 //send mail for forgot password
 const PasswordResetMailService=new PasswordResetService()
-const Tokenservice = new TokenService(jwtService);
+const ACCESSTOKEN_SECRET_KEY = process.env.ACCESSTOKEN_SECRET_KEY
+
+const Tokenservice = new TokenService(redisService,jwtService,ACCESSTOKEN_SECRET_KEY!);
 const sendMailForForgotPasswordUseCase=new SendResetEmailForForgetPassword(PasswordResetMailService,Tokenservice,ClientRepository)
 export const injectedSendMailForgetPasswordController = new SendResetEmailToClient(sendMailForForgotPasswordUseCase)
 
@@ -75,3 +78,6 @@ export const injectedSendMailForgetPasswordController = new SendResetEmailToClie
 const forgotPasswordClientUseCase=new ResetPasswordClientUseCase(Tokenservice,ClientRepository)
 export const injectedForgotPasswordClientcontroller=new ResetPasswordClient(forgotPasswordClientUseCase)
 
+//client Logout
+const clientLogoutUseCase=new ClientLogoutUseCase(redisService,jwtService)
+export const injectedClientLogoutController = new ClientLogoutController(clientLogoutUseCase)

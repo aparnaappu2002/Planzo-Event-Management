@@ -2,7 +2,7 @@ import { useMutation,useQuery } from "@tanstack/react-query";
 import { clientSignup,clientCreateAccount,
     clientResendOtp,clientLogin,
     clientGoogleLogin,updateProfileClient,
-    changePasswordClient,clientForgetPasswordEmail,uploadImageCloudinary,clientForgetPassword }
+    changePasswordClient,clientForgetPasswordEmail,uploadImageCloudinary,clientForgetPassword,clientLogout }
  from "../../src/services/ApiServiceClients";
 import { ClientUpdateProfileEntity } from "@/types/clientUpdateProfileType";
 
@@ -92,5 +92,11 @@ export const useClientForgetPassword = () => {
           newPassword: string,
           token: string 
         }) => clientForgetPassword({ email, newPassword, token })
+    })
+}
+
+export const useClientLogout = () => {
+    return useMutation({
+        mutationFn: () => clientLogout(),
     })
 }

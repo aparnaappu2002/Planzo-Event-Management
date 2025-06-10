@@ -129,3 +129,14 @@ export const updateEvent = async (eventId: string, update: EventUpdateEntity) =>
         throw new Error('Error while updating event')
     }
 }
+
+export const vendorLogout = async () => {
+    try {
+        const response = await axios.post('/logout')
+        return response.data
+    } catch (error) {
+        console.log('error while logout', error)
+        if (isAxiosError(error)) throw new Error(error.response?.data.error)
+        throw new Error('error while logout')
+    }
+}

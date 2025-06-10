@@ -5,7 +5,9 @@ import { injectedClientLoginController,
     injectedUpdateProfileClientController,
     injectedChangeClientPasswordController,
 injectedChangeProfileImageClientController,injectedSendMailForgetPasswordController,
-injectedForgotPasswordClientcontroller } from "../../Inject/clientInject"
+injectedForgotPasswordClientcontroller,injectedClientLogoutController } from "../../Inject/clientInject"
+import { injectedVerifyTokenAndCheckBlacklistMiddleWare,injectedTokenExpiryValidationChecking,injectedClientStatusCheckingMiddleware } from "../../Inject/serviceInject"
+import { checkRoleBaseMiddleware } from "../../../adapters/middlewares/roleBaseMiddleWare"
 
 export class clientRoute{
     public clientRoute:Router
@@ -35,7 +37,7 @@ export class clientRoute{
         this.clientRoute.patch('/changePasswordClient',  (req: Request, res: Response) => {
             injectedChangeClientPasswordController.handeChangePasswordClient(req, res)
         })
-        this.clientRoute.patch('/updateProfileImage', (req: Request, res: Response) => {
+        this.clientRoute.patch('/updateProfileImage', injectedVerifyTokenAndCheckBlacklistMiddleWare,injectedTokenExpiryValidationChecking,checkRoleBaseMiddleware('client'),injectedClientStatusCheckingMiddleware, (req: Request, res: Response) => {
             injectedChangeProfileImageClientController.handleUpdateProfileImageClient(req, res)
         })
         this.clientRoute.post('/sendEmailForgetPassword', (req: Request, res: Response) => {
@@ -44,5 +46,9 @@ export class clientRoute{
         this.clientRoute.post('/resetforgetPassword', (req: Request, res: Response) => {
             injectedForgotPasswordClientcontroller.handleResetPassword(req, res)
         })
+        this.clientRoute.post('/logout', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('client'), injectedClientStatusCheckingMiddleware, (req: Request, res: Response) => {
+            injectedClientLogoutController.handleClientLogout(req, res)
+        })
+        
     }
 }
