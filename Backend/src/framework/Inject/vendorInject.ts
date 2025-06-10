@@ -26,6 +26,11 @@ import { FindAllEventsVendorUseCase } from "../../useCases/vendor/event/findAllE
 import { FindAllEventsVendorController } from "../../adapters/controllers/vendor/event/findAllEventsController";
 import { UpdateEventUseCase } from "../../useCases/vendor/event/updateEventUseCase";
 import { UpdateEventController } from "../../adapters/controllers/vendor/event/updateEventController";
+import { VendorLogoutUseCase } from "../../useCases/vendor/authentication/vendorLogoutUseCase";
+import { VendorLogoutController } from "../../adapters/controllers/vendor/authentication/vendorLogoutController";
+
+
+
 
 
 //Register Vendor
@@ -56,6 +61,10 @@ export const injectedUpdateAboutAndPhoneController = new UpdateAboutAndPhoneVend
 const HashPassword = new hashPassword()
 const changePasswordUseCase = new ChangePasswordVendorUseCase(vendorRespository, HashPassword)
 export const injectedChangePasswordVendorController = new ChangePasswordVendorControler(changePasswordUseCase)
+
+//vendor logout
+const vendorLogoutUseCase = new VendorLogoutUseCase(redisService,jwtService)
+export const injectedVendorLogoutController = new VendorLogoutController(vendorLogoutUseCase)
 //create event
 const eventRepository = new EventRepository()
 const eventCreationUseCase = new EventCreationUseCase(eventRepository)

@@ -24,22 +24,21 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Calendar, ChevronDown, LogIn, Menu, Ticket, User, UserCircle, X } from "lucide-react"
 import { useSelector, useDispatch } from "react-redux"
-import { toast } from "react-toastify" // or your preferred toast library
+import { toast } from "react-toastify"
 
 import { RootState } from "@/redux/Store"
-import { useClientLogout } from "@/hooks/clientCustomHooks" // adjust path as needed
-// import { clearClient } from "@/redux/clientSlice" // adjust path as needed
+import { removeClient } from "@/redux/slices/user/useSlice"
+import { removeToken } from "@/redux/slices/user/userToken"
 
 export const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   
   const client = useSelector((state: RootState) => state.clientSlice.client)
   const isLoggedIn = !!client
-
-  const { mutate: logout, isPending: isLoggingOut } = useClientLogout()
 
   const handleLoginClick = () => {
     navigate('/login') 
@@ -57,21 +56,71 @@ export const Navbar: React.FC = () => {
     setIsLogoutDialogOpen(true)
   }
 
-  const confirmLogout = () => {
-    logout(undefined, {
-      onSuccess: () => {
-        // Clear client data from Redux store
-        // dispatch(clearClient()) // uncomment and adjust action name as needed
-        
-        toast.success("Logged out successfully")
+  const confirmLogout = async () => {
+    try {
+      setIsLoggingOut(true)
+      
+      // Show loading toast
+      const toastId = toast.loading("Logging out...")
+      
+      // Optional: Make API call to logout endpoint if you have one
+      // await axios.post('/api/client/logout')
+      
+      // Clear Redux state
+      dispatch(removeClient({}))
+      dispatch(removeToken({}))
+      
+      // Clear any localStorage items if you have them
+      localStorage.removeItem('clientToken')
+      localStorage.removeItem('clientData')
+      
+      // Update toast to success
+      toast.update(toastId, {
+        render: "Logged out successfully!",
+        type: "success",
+        isLoading: false,
+        autoClose: 2000,
+        closeButton: true
+      })
+      
+      setIsLogoutDialogOpen(false)
+      setIsMenuOpen(false) // Close mobile menu if open
+      
+      // Navigate to login page after a short delay
+      setTimeout(() => {
         navigate('/login')
-        setIsLogoutDialogOpen(false)
-        setIsMenuOpen(false) // Close mobile menu if open
-      },
-      onError: (error: Error) => {
-        toast.error(error.message || "Failed to logout")
-        setIsLogoutDialogOpen(false)
+      }, 1000)
+      
+    } catch (error) {
+      console.error('Logout failed:', error)
+      
+      // Show error toast
+      let errorMessage = "Logout failed. Please try again."
+      
+      if (error instanceof Error) {
+        errorMessage = error.message
       }
+      
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
+      
+      setIsLogoutDialogOpen(false)
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }
+
+  const handleLogoutCancel = () => {
+    setIsLogoutDialogOpen(false)
+    toast.info("Logout cancelled", {
+      position: "top-right",
+      autoClose: 2000,
     })
   }
 
@@ -250,7 +299,7 @@ export const Navbar: React.FC = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setIsLogoutDialogOpen(false)}>
+            <AlertDialogCancel onClick={handleLogoutCancel}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction 

@@ -1,8 +1,8 @@
 import { Request,Response,Router } from "express";
 import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController,
     injectedUpdateImageVendorController,injectedUpdateAboutAndPhoneController,
-    injectedChangePasswordVendorController,injectedEventCreationController,injectedFindAllEventsVendorController,injectedUpdateEventController
- } from "../../Inject/vendorInject";
+    injectedChangePasswordVendorController,injectedEventCreationController,injectedFindAllEventsVendorController,injectedUpdateEventController,
+ injectedVendorLogoutController} from "../../Inject/vendorInject";
  import { injectedVerifyTokenAndCheckBlacklistMiddleWare,injectedTokenExpiryValidationChecking,injectedVendorStatusCheckingMiddleware } from "../../Inject/serviceInject";
 import { checkRoleBaseMiddleware } from "../../../adapters/middlewares/roleBaseMiddleWare";
 
@@ -34,6 +34,9 @@ export class VendorRoute {
         })
         this.vendorRoute.patch('/changePassword', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('vendor'), injectedVendorStatusCheckingMiddleware, (req: Request, res: Response) => {
             injectedChangePasswordVendorController.handleChangePasswordVendor(req, res)
+        })
+        this.vendorRoute.post('/logout', injectedVerifyTokenAndCheckBlacklistMiddleWare, injectedTokenExpiryValidationChecking, checkRoleBaseMiddleware('vendor'), injectedVendorStatusCheckingMiddleware, (req: Request, res: Response) => {
+            injectedVendorLogoutController.handleVendorLogout(req, res)
         })
         this.vendorRoute.post('/createEvent/:vendorId',  (req: Request, res: Response) => {
             injectedEventCreationController.handleCreateEvent(req, res)
