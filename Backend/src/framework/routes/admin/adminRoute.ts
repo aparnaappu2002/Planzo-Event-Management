@@ -7,6 +7,7 @@ injectedVendorBlockController,injectedVendorUnblockController,
 injectedFindAllRejectedVendorController
     
  } from "../../Inject/adminInject";
+
 export class AdminRoute {
     public adminRoute: Router
     constructor() {
@@ -47,5 +48,6 @@ export class AdminRoute {
         this.adminRoute.patch('/unblockVendor', (req: Request, res: Response) => {
             injectedVendorUnblockController.handleVendorUnblock(req, res)
         })
+        
     }
 }

@@ -7,6 +7,7 @@ export interface IvendorDatabaseRepositoryInterface {
     changeVendorStatus(vendorId: string, newStatus: string): Promise<VendorEntity>
     findById(vendorId: string): Promise<VendorEntity | null>
     rejectPendingVendor(vendorId: string, newStatus: string, rejectionReason: string): Promise<VendorEntity>
+    reapplyVendor(vendorId: string, newStatus: string): Promise<VendorEntity>
     findAllRejectedVendor(pageNo: number): Promise<{ rejectedVendors: VendorEntity[] | []; totalPages: number }>
     forgetPassword(email: string, newPassword: string): Promise<VendorEntity | null>
     updateProfileImage(id: string, imageUrl: string): Promise<VendorEntity | null>

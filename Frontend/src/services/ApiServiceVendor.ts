@@ -140,3 +140,17 @@ export const vendorLogout = async () => {
         throw new Error('error while logout')
     }
 }
+
+export const reapplyVendor = async ({ vendorId, newStatus }: { vendorId: string, newStatus: string }) => {
+    try {
+        const response = await axios.patch('/reapplyVendor', { vendorId, newStatus })
+        console.log(response)
+        return response.data
+    } catch (error) {
+        console.log('error while reapplying vendor', error)
+        if (isAxiosError(error)) {
+            throw new Error(error?.response?.data?.error)
+        }
+        throw new Error('error while reapplying vendor')
+    }
+}

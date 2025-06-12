@@ -41,6 +41,12 @@ export class VendorDatabase implements IvendorDatabaseRepositoryInterface {
         if (!vendor) throw new Error('There is no vendor in this email')
         return vendor
     }
+    async reapplyVendor(vendorId: string, newStatus: string): Promise<VendorEntity> {
+        const vendor = await VendorModel.findByIdAndUpdate(vendorId, { vendorStatus: newStatus, rejectionReason: null }, { new: true })
+        if (!vendor) throw new Error('There is no vendor with this ID')
+        return vendor
+    }
+
     async findAllRejectedVendor(pageNo: number): Promise<{ rejectedVendors: VendorEntity[]; totalPages: number }> {
         const limit = 5
         const page = Math.max(pageNo, 1)

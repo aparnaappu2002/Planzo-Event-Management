@@ -23,10 +23,17 @@ import {
   Edit,
   Save,
   X,
+  RefreshCw,
+  Wifi,
+  WifiOff,
 } from "lucide-react"
 import { addVendor, removeVendor } from "@/redux/slices/vendor/vendorSlice"
-import { useUpdateProfileImageMutation, useUploadeImageToCloudinaryMutation } from "@/hooks/vendorCustomHooks"
-import { useUpdateVendorDetailsMutation } from "@/hooks/vendorCustomHooks"
+import { 
+  useUpdateProfileImageMutation, 
+  useUploadeImageToCloudinaryMutation,
+  useUpdateVendorDetailsMutation,
+  useReapplyVendor 
+} from "@/hooks/vendorCustomHooks"
 import ImageCropper from "../signup/ImageCropper"
 import { removeVendorToken } from "@/redux/slices/vendor/vendorTokenSlice"
 
@@ -40,6 +47,8 @@ export default function VendorDashboard() {
   const [changedProfile, setChangedProfile] = useState<boolean>(false)
   const [isUploading, setIsUploading] = useState<boolean>(false)
   const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [connectionError, setConnectionError] = useState<boolean>(false)
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -50,6 +59,7 @@ export default function VendorDashboard() {
   const navigate = useNavigate()
   const uploadCloudinary = useUploadeImageToCloudinaryMutation()
   const updateVendorDetailsMutation = useUpdateVendorDetailsMutation()
+  const reapplyVendorMutation = useReapplyVendor()
 
   useEffect(() => {
     if (vendor) {
@@ -115,6 +125,7 @@ export default function VendorDashboard() {
             onSuccess: (data) => {
               toast.success(data?.message || "Profile image updated")
               dispatch(addVendor(data.updatedVendor))
+              setConnectionError(false)
             },
             onError: (err) => {
               handleError(err, "Error uploading profileImage in db")
@@ -159,6 +170,7 @@ export default function VendorDashboard() {
             toast.success("Profile updated successfully")
             dispatch(addVendor({ ...vendor, ...formData }))
             setIsEditing(false)
+            setConnectionError(false)
           },
           onError: (error) => {
             handleError(error, "Error updating profile")
@@ -172,11 +184,26 @@ export default function VendorDashboard() {
 
   const handleError = (error: unknown, message: string) => {
     console.error(message, error)
+    
+    // Check for connection errors
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const isConnectionError = errorMessage.includes('ERR_CONNECTION_REFUSED') || 
+                             errorMessage.includes('ECONNREFUSED') ||
+                             errorMessage.includes('Network Error') ||
+                             errorMessage.includes('Failed to fetch')
+
+    if (isConnectionError) {
+      setConnectionError(true)
+      toast.error("Cannot connect to server. Please check if the backend is running and try again.")
+      return
+    }
+
     if (error instanceof Error) {
       toast.error(error.message)
-    }
-    if (isAxiosError(error)) {
+    } else if (isAxiosError(error)) {
       toast.error(error.response?.data.message || "An error occurred")
+    } else {
+      toast.error("An unexpected error occurred")
     }
   }
 
@@ -198,6 +225,87 @@ export default function VendorDashboard() {
       })
     }
   }
+
+ const handleReapply = async () => {
+  // Early return for missing vendor ID
+  if (!vendor?._id) {
+    toast.error("Vendor ID not found");
+    return;
+  }
+
+  // No need for try-catch since mutation handles errors
+  reapplyVendorMutation.mutate(
+    {
+      vendorId: vendor._id,
+      newStatus: "pending"
+    },
+    {
+      onSuccess: (data) => {
+        toast.success(
+          data?.message || "Reapplication submitted successfully! Your application is now under review."
+        );
+        
+        // Update local state
+        dispatch(addVendor(data.updatedVendor));
+        setRejected(false);
+        setIsPending(true);
+        setConnectionError(false);
+      },
+      onError: (error) => {
+        handleError(error, "Error submitting reapplication");
+      },
+    }
+  );
+};
+
+  const checkBackendConnection = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/health', { 
+        method: 'GET',
+        signal: AbortSignal.timeout(5000) // 5 second timeout
+      })
+      if (response.ok) {
+        setConnectionError(false)
+        toast.success("Connection restored!")
+      }
+    } catch (error) {
+      toast.error("Backend server is still not responding. Please start your backend server.")
+    }
+  }
+
+  // Connection Error Alert Component
+  const ConnectionErrorAlert = () => (
+    <div className="fixed top-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50 max-w-md">
+      <div className="flex items-start">
+        <WifiOff className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+        <div className="flex-1">
+          <h3 className="text-sm font-medium text-red-800">Connection Error</h3>
+          <p className="text-sm text-red-700 mt-1">
+            Cannot connect to the backend server. Please ensure your backend is running on localhost:3000.
+          </p>
+          <div className="mt-3 flex space-x-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={checkBackendConnection}
+              className="text-red-700 border-red-300 hover:bg-red-50"
+            >
+              <Wifi className="w-4 h-4 mr-1" />
+              Retry Connection
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setConnectionError(false)}
+              className="text-gray-600 border-gray-300"
+            >
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   // Mock components for conditional rendering
   const PendingRequest = () => (
@@ -226,9 +334,23 @@ export default function VendorDashboard() {
           <p className="text-gray-600 mb-6">
             {reason || "Your vendor application has been rejected. Please contact support for more information."}
           </p>
-          <Button onClick={handleLogout} className="bg-yellow-500 hover:bg-yellow-600">
-            Return to Login
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <Button 
+              onClick={handleReapply} 
+              className="bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2"
+              disabled={reapplyVendorMutation.isPending}
+            >
+              <RefreshCw className={`w-4 h-4 ${reapplyVendorMutation.isPending ? 'animate-spin' : ''}`} />
+              {reapplyVendorMutation.isPending ? "Submitting..." : "Reapply"}
+            </Button>
+            <Button 
+              onClick={handleLogout} 
+              variant="outline"
+              className="border-yellow-300 text-yellow-600 hover:bg-yellow-50"
+            >
+              Return to Login
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -236,6 +358,7 @@ export default function VendorDashboard() {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-yellow-50 to-yellow-100">
+      {connectionError && <ConnectionErrorAlert />}
       {isPending && <PendingRequest />}
       {rejected && <RejectedVendorPage reason={vendor?.rejectionReason} />}
       {showCropper && (

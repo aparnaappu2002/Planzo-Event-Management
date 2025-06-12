@@ -147,3 +147,4 @@ export const unblockVendor = async (vendorId: string) => {
         throw new Error('error while unblocking vendor')
     }
 }
+

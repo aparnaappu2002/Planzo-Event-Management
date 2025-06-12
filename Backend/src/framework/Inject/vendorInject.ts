@@ -28,7 +28,8 @@ import { UpdateEventUseCase } from "../../useCases/vendor/event/updateEventUseCa
 import { UpdateEventController } from "../../adapters/controllers/vendor/event/updateEventController";
 import { VendorLogoutUseCase } from "../../useCases/vendor/authentication/vendorLogoutUseCase";
 import { VendorLogoutController } from "../../adapters/controllers/vendor/authentication/vendorLogoutController";
-
+import { ReapplyVendorUseCase } from "../../useCases/vendor/authentication/reapplyVendorUseCase";
+import { ReapplyVendorController } from "../../adapters/controllers/vendor/authentication/reapplyVendorController";
 
 
 
@@ -75,3 +76,8 @@ export const injectedFindAllEventsVendorController = new FindAllEventsVendorCont
 //update event
 const updateEventUseCase = new UpdateEventUseCase(eventRepository)
 export const injectedUpdateEventController = new UpdateEventController(updateEventUseCase)
+
+//Reapply Vendor
+
+const reApplyVendorUseCase=new ReapplyVendorUseCase(vendorRespository)
+export const injectedReapplyVendorController = new ReapplyVendorController(reApplyVendorUseCase)
