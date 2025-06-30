@@ -6,11 +6,11 @@ import { useFetchVendorAdminQuery, useBlockVendor, useUnblockVendor } from "../.
 import { ChevronLeft, ChevronRight, Search, RefreshCw, Ban, CheckCircle } from "lucide-react"
 import { toast } from "react-toastify" 
 import { useQueryClient } from "@tanstack/react-query"
-
+import ConfirmationModal from "./ConfirmationModal"
 interface Vendor {
-  _id: string  // Backend appears to use _id rather than id
-  id?: string  // Handle both formats just in case
-  vendorId?: string // Some implementations might use vendorId
+  _id: string  
+  id?: string  
+  vendorId?: string 
   name: string
   email: string
   phone?: string | number
@@ -22,6 +22,15 @@ interface Vendor {
 const VendorListPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean
+    vendor: Vendor | null
+    action: "block" | "unblock"
+  }>({
+    isOpen: false,
+    vendor: null,
+    action: "block"
+  })
 
   const { data, isLoading, isError, error, refetch } = useFetchVendorAdminQuery(currentPage)
   const vendors: Vendor[] = data?.vendors || []
@@ -37,7 +46,18 @@ const VendorListPage: React.FC = () => {
   const blockVendor = useBlockVendor()
   const unblockVendor = useUnblockVendor()
 
-  const handleBlockUnblock = (vendor: Vendor, action: "block" | "unblock") => {
+  const handleBlockUnblockClick = (vendor: Vendor, action: "block" | "unblock") => {
+    setConfirmationModal({
+      isOpen: true,
+      vendor,
+      action
+    })
+  }
+
+  const handleConfirmAction = () => {
+    const { vendor, action } = confirmationModal
+    if (!vendor) return
+
     // Find the correct ID field - try multiple options as backends can differ
     const vendorId = vendor._id || vendor.id || vendor.vendorId
     
@@ -47,6 +67,7 @@ const VendorListPage: React.FC = () => {
     
     if (!vendorId) {
       toast.error("Vendor ID is missing")
+      setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
       return
     }
     
@@ -55,10 +76,12 @@ const VendorListPage: React.FC = () => {
         onSuccess: (data) => {
           toast.success(data.message || "Vendor blocked successfully")
           queryClient.invalidateQueries({ queryKey: ["vendors", currentPage] })
+          setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
         },
         onError: (err: any) => {
           toast.error(err?.message || "Failed to block vendor")
           console.error("Block vendor error:", err)
+          setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
         },
       })
     } else {
@@ -66,13 +89,19 @@ const VendorListPage: React.FC = () => {
         onSuccess: (data) => {
           toast.success(data.message || "Vendor unblocked successfully")
           queryClient.invalidateQueries({ queryKey: ["vendors", currentPage] })
+          setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
         },
         onError: (err: any) => {
           toast.error(err?.message || "Failed to unblock vendor")
           console.error("Unblock vendor error:", err)
+          setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
         },
       })
     }
+  }
+
+  const handleCloseModal = () => {
+    setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
   }
 
   const handlePreviousPage = () => {
@@ -216,7 +245,7 @@ const VendorListPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {vendor.status === "active" ? (
                           <button
-                            onClick={() => handleBlockUnblock(vendor, "block")}
+                            onClick={() => handleBlockUnblockClick(vendor, "block")}
                             className="inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full hover:bg-red-200 transition-colors mr-2"
                           >
                             <Ban className="h-4 w-4 mr-1" />
@@ -224,7 +253,7 @@ const VendorListPage: React.FC = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleBlockUnblock(vendor, "unblock")}
+                            onClick={() => handleBlockUnblockClick(vendor, "unblock")}
                             className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors"
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
@@ -352,6 +381,16 @@ const VendorListPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirmAction}
+        vendor={confirmationModal.vendor}
+        action={confirmationModal.action}
+        isLoading={blockVendor.isPending || unblockVendor.isPending}
+      />
     </div>
   )
 }
