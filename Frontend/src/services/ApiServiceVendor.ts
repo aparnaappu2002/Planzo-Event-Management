@@ -154,3 +154,41 @@ export const reapplyVendor = async ({ vendorId, newStatus }: { vendorId: string,
         throw new Error('error while reapplying vendor')
     }
 }
+
+export const vendorForgetPasswordEmail = async (email: string) => {
+    try {
+        const response = await axios.post('/sendEmailForgetPassword', { email })
+        return response.data
+    } catch (error) {
+        console.log('error while requesting otp for forget password', error)
+        if (isAxiosError(error)) {
+            throw new Error(error.response?.data?.error)
+        }
+        throw new Error('error while requesting for otp in forget password')
+    }
+}
+
+export const vendorForgetPassword = async ({ 
+  email, 
+  newPassword, 
+  token 
+}: { 
+  email: string, 
+  newPassword: string,
+  token: string 
+}) => {
+    try {
+        const response = await axios.post('/resetforgetPassword', { 
+          email, 
+          newPassword, 
+          token 
+        })
+        return response.data
+    } catch (error) {
+        console.log('error while forget password', error)
+        if (isAxiosError(error)) {
+            throw new Error(error?.response?.data.error)
+        }
+        throw new Error('error while forget password')
+    }
+}

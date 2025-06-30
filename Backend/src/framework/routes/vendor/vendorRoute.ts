@@ -2,7 +2,7 @@ import { Request,Response,Router } from "express";
 import { injectedVendorAuthenticationController,injectedVendorLoginController,injectedResendOtpVendorController,
     injectedUpdateImageVendorController,injectedUpdateAboutAndPhoneController,
     injectedChangePasswordVendorController,injectedEventCreationController,injectedFindAllEventsVendorController,injectedUpdateEventController,
- injectedVendorLogoutController,injectedReapplyVendorController} from "../../Inject/vendorInject";
+ injectedVendorLogoutController,injectedReapplyVendorController,injectedForgotPasswordVendorController,injectedSendMailForgotPasswordVendorController} from "../../Inject/vendorInject";
  import { injectedVerifyTokenAndCheckBlacklistMiddleWare,injectedTokenExpiryValidationChecking,injectedVendorStatusCheckingMiddleware } from "../../Inject/serviceInject";
 import { checkRoleBaseMiddleware } from "../../../adapters/middlewares/roleBaseMiddleWare";
 
@@ -49,6 +49,12 @@ export class VendorRoute {
         })
         this.vendorRoute.put('/updateEvent',  (req: Request, res: Response) => {
             injectedUpdateEventController.handleUpdateEvent(req, res)
+        })
+        this.vendorRoute.post('/sendEmailForgetPassword', (req: Request, res: Response) => {
+            injectedSendMailForgotPasswordVendorController.handleSendResetEmail(req, res)
+        })
+        this.vendorRoute.post('/resetforgetPassword', (req: Request, res: Response) => {
+            injectedForgotPasswordVendorController.handleResetPassword(req, res)
         })
         
     }

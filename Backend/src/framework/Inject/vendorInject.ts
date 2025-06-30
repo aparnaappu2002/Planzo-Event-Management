@@ -30,7 +30,12 @@ import { VendorLogoutUseCase } from "../../useCases/vendor/authentication/vendor
 import { VendorLogoutController } from "../../adapters/controllers/vendor/authentication/vendorLogoutController";
 import { ReapplyVendorUseCase } from "../../useCases/vendor/authentication/reapplyVendorUseCase";
 import { ReapplyVendorController } from "../../adapters/controllers/vendor/authentication/reapplyVendorController";
-
+import { SendResetEmailForForgetPasswordVendor } from "../../useCases/vendor/authentication/sendResetForgotPasswordVendor";
+import { SendResetEmailToVendor } from "../../adapters/controllers/vendor/authentication/sendForgetPasswordVendor";
+import { PasswordResetService } from "../services/resetEmailService";
+import { TokenService } from "../services/tokenService";
+import { ResetPasswordVendorUseCase } from "../../useCases/vendor/authentication/forgotPasswordVendorUseCase";
+import { ResetPasswordVendor } from "../../adapters/controllers/vendor/authentication/resetForgotPasswordVendor";
 
 
 
@@ -81,3 +86,15 @@ export const injectedUpdateEventController = new UpdateEventController(updateEve
 
 const reApplyVendorUseCase=new ReapplyVendorUseCase(vendorRespository)
 export const injectedReapplyVendorController = new ReapplyVendorController(reApplyVendorUseCase)
+
+//send Mail for forgot Password
+
+const PasswordResetMailService=new PasswordResetService()
+const ACCESSTOKEN_SECRET_KEY=process.env.ACCESSTOKEN_SECRET_KEY
+const Tokenservice=new TokenService(redisService,jwtService,ACCESSTOKEN_SECRET_KEY!)
+const sendMailForForgotPasswordVendorUseCase=new SendResetEmailForForgetPasswordVendor(PasswordResetMailService,Tokenservice,vendorRespository)
+export const injectedSendMailForgotPasswordVendorController=new SendResetEmailToVendor(sendMailForForgotPasswordVendorUseCase)
+
+//changing password in forgot password
+const forgotPasswordVendorUseCase=new ResetPasswordVendorUseCase(Tokenservice,vendorRespository)
+export const injectedForgotPasswordVendorController=new ResetPasswordVendor(forgotPasswordVendorUseCase)

@@ -7,6 +7,8 @@ import ChangePassword from "@/Vendor/changePassword/ChangePassword";
 import EventCreationForm from "@/Vendor/event/EventCreation";
 import EventManagementPage from "@/Vendor/event/EventManagement";
 import ProtectedRouteVendor from "@/ProtectRoute/ProtectRouteVendor";
+import ForgotPasswordVendor from "@/Vendor/ForgotPassword/ForgotPasswordVendor";
+import ResetPasswordVendor from "@/Vendor/ForgotPassword/ResetPasswordVendor";
 
 
 
@@ -15,7 +17,8 @@ const VendorRoute=()=>{
         <Routes>
             <Route path="signup" element={<VendorSignupPage/>}></Route>
             <Route path="login" element={<VendorLogin/>}></Route>
-            
+            <Route path="/forgotpassword" element={<ForgotPasswordVendor/>}></Route>
+            <Route path="/resetPassword/:token?" element={<ResetPasswordVendor/>}></Route>
             <Route path="/" element={<VendorLayout/>}>
             
             <Route path="/home" element={<ProtectedRouteVendor><VendorDashboard/></ProtectedRouteVendor> }></Route>

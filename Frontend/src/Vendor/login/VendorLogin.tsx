@@ -166,7 +166,7 @@ export default function VendorLogin() {
                 Remember me
               </label>
             </div>
-            <a href="#" className="text-sm font-medium text-yellow-600 hover:text-yellow-800">
+            <a href="/vendor/forgotpassword" className="text-sm font-medium text-yellow-600 hover:text-yellow-800">
               Forgot password?
             </a>
           </div>

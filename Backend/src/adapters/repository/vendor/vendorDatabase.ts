@@ -58,6 +58,9 @@ export class VendorDatabase implements IvendorDatabaseRepositoryInterface {
     async forgetPassword(email: string, newPassword: string): Promise<VendorEntity | null> {
         return await VendorModel.findOneAndUpdate({ email }, { password: newPassword }, { new: true })
     }
+    async resetPassword(vendorId: string, hashedPassword: string): Promise<VendorEntity | null> {
+        return await VendorModel.findOneAndUpdate({ vendorId }, { password: hashedPassword }, { new: true })
+    }
     async updateProfileImage(id: string, imageUrl: string): Promise<VendorEntity | null> {
         return await VendorModel.findByIdAndUpdate(id, { profileImage: imageUrl }, { new: true })
     }

@@ -1,7 +1,7 @@
 import { uploadImageCloudinary } from "@/services/ApiServiceClients";
 import { vendorSignup,verifyOtpVendor,resendOtpVendor,
     updateProfileImageVendor,updateVendorDetails,
-    changePasswordVendor,createEvent,updateEvent,findAllEventsInVendor,vendorLogout,reapplyVendor
+    changePasswordVendor,createEvent,updateEvent,findAllEventsInVendor,vendorLogout,reapplyVendor,vendorForgetPassword,vendorForgetPasswordEmail
  } from "@/services/ApiServiceVendor";
 import { useMutation,useQuery } from "@tanstack/react-query";
 import { EventType } from "@/types/EventType";
@@ -100,5 +100,25 @@ export const useReapplyVendor = () => {
         mutationFn: ({ vendorId, newStatus }: { vendorId: string, newStatus: string }) => {
             return reapplyVendor({ vendorId, newStatus })
         }
+    })
+}
+
+export const useVendorRequestForgetPassword = () => {
+    return useMutation({
+        mutationFn: (email: string) => vendorForgetPasswordEmail(email)
+    })
+}
+
+export const useVendorForgetPassword = () => {
+    return useMutation({
+        mutationFn: ({ 
+          email, 
+          newPassword, 
+          token 
+        }: { 
+          email: string, 
+          newPassword: string,
+          token: string 
+        }) => vendorForgetPassword({ email, newPassword, token })
     })
 }

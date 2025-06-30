@@ -10,6 +10,7 @@ export interface IvendorDatabaseRepositoryInterface {
     reapplyVendor(vendorId: string, newStatus: string): Promise<VendorEntity>
     findAllRejectedVendor(pageNo: number): Promise<{ rejectedVendors: VendorEntity[] | []; totalPages: number }>
     forgetPassword(email: string, newPassword: string): Promise<VendorEntity | null>
+    resetPassword(vendorId: string, hashedPassword: string): Promise<VendorEntity | null>
     updateProfileImage(id: string, imageUrl: string): Promise<VendorEntity | null>
     findVendorsForCarousal(): Promise<VendorEntity[] | []>
     blockVendor(vendorId: string): Promise<string | null>
