@@ -7,6 +7,9 @@ import { ChevronLeft, ChevronRight, Search, RefreshCw, Ban, CheckCircle } from "
 import { toast } from "react-toastify" 
 import { useQueryClient } from "@tanstack/react-query"
 import ConfirmationModal from "./ConfirmationModal"
+import { removeVendorToken } from "@/redux/slices/vendor/vendorTokenSlice"
+import { removeVendor } from "@/redux/slices/vendor/vendorSlice"
+import { useDispatch } from "react-redux"
 interface Vendor {
   _id: string  
   id?: string  
@@ -20,6 +23,7 @@ interface Vendor {
 }
 
 const VendorListPage: React.FC = () => {
+  const dispatch=useDispatch()
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [confirmationModal, setConfirmationModal] = useState<{
@@ -75,6 +79,9 @@ const VendorListPage: React.FC = () => {
       blockVendor.mutate(vendorId, {
         onSuccess: (data) => {
           toast.success(data.message || "Vendor blocked successfully")
+          dispatch(removeVendorToken(null))
+          dispatch(removeVendor(null))
+          localStorage.removeItem('id')
           queryClient.invalidateQueries({ queryKey: ["vendors", currentPage] })
           setConfirmationModal({ isOpen: false, vendor: null, action: "block" })
         },
